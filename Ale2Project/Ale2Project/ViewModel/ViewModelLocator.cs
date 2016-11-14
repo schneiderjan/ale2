@@ -34,7 +34,7 @@ namespace Ale2Project.ViewModel
             SimpleIoc.Default.Register<MainViewModel>();
 
             //Services
-            SimpleIoc.Default.Register<IFileReaderService, FileReaderService>();
+            SimpleIoc.Default.Register<IFileService, FileService>();
         }
 
         /// <summary>

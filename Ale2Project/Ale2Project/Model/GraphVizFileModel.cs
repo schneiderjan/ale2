@@ -10,7 +10,7 @@ namespace Ale2Project.Model
     /// See http://www.galasoft.ch/mvvm
     /// </para>
     /// </summary>
-    public class GraphVizFile : ViewModelBase
+    public class GraphVizFileModel : ViewModelBase
     {
         public string FilePath { get; set; }
         public List<string> Lines { get; set; }

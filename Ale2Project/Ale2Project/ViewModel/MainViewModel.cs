@@ -2,7 +2,6 @@
 using Ale2Project.Service;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
-using Microsoft.Win32;
 
 namespace Ale2Project.ViewModel
 {
@@ -14,28 +13,50 @@ namespace Ale2Project.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
-        IFileReaderService _fileReaderService;
+        //Services
+        private readonly IFileService _fileService;
 
-        private RelayCommand openFileCommand;
-        public RelayCommand OpenFileCommand { get { return openFileCommand; } set { openFileCommand = value; RaisePropertyChanged(); } }
+        //Models
+        private GraphVizFileModel _file;
 
-        private GraphVizFile _file;
-        public GraphVizFile File
+        //Commands
+        private RelayCommand _parseFileCommand;
+        private RelayCommand _openFileCommand;
+
+        public RelayCommand OpenFileCommand
+        {
+            get { return _openFileCommand; }
+            set { _openFileCommand = value; RaisePropertyChanged(); }
+        }
+        public RelayCommand ParseFileCommand
+        {
+            get { return _parseFileCommand; }
+            set { _parseFileCommand = value; RaisePropertyChanged(); }
+        }
+
+        public GraphVizFileModel File
         {
             get { return _file; }
             set { _file = value; RaisePropertyChanged(); }
         }
 
-        public MainViewModel(IFileReaderService fileReaderService)
+        public MainViewModel(IFileService fileService)
         {
-            _fileReaderService = fileReaderService;
+            _fileService = fileService;
             OpenFileCommand = new RelayCommand(() => OpenFile(), () => true);
+            ParseFileCommand = new RelayCommand( ()=> ParseFile(), () => true );
+        }
+
+        private void ParseFile()
+        {
+            if (File == null) return;
+            _fileService.ParseGraphVizFile(File);
 
         }
 
-        public void OpenFile()
+        private void OpenFile()
         {
-            File = _fileReaderService.ReadFile();
+            File = _fileService.ReadFile();
         }
     }
 }

@@ -38,6 +38,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label
                 Grid.Column="0"
@@ -47,6 +48,11 @@
                 VerticalAlignment="Center"
                 HorizontalAlignment="Left"
                 Text="{Binding Path=File.FilePath}"/>
+            <Button
+                Grid.Column="2"
+                HorizontalAlignment="Right"
+                Content="Parse File"
+                Command="{Binding ParseFileCommand}"/>
             </Grid>
 
 
