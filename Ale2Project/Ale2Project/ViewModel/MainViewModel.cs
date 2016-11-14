@@ -1,5 +1,8 @@
-﻿using GalaSoft.MvvmLight;
-using Ale2Project.Model;
+﻿using Ale2Project.Model;
+using Ale2Project.Service;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
+using Microsoft.Win32;
 
 namespace Ale2Project.ViewModel
 {
@@ -11,55 +14,28 @@ namespace Ale2Project.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
-        private readonly IDataService _dataService;
+        IFileReaderService _fileReaderService;
 
-        /// <summary>
-        /// The <see cref="WelcomeTitle" /> property's name.
-        /// </summary>
-        public const string WelcomeTitlePropertyName = "WelcomeTitle";
+        private RelayCommand openFileCommand;
+        public RelayCommand OpenFileCommand { get { return openFileCommand; } set { openFileCommand = value; RaisePropertyChanged(); } }
 
-        private string _welcomeTitle = string.Empty;
-
-        /// <summary>
-        /// Gets the WelcomeTitle property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string WelcomeTitle
+        private GraphVizFile _file;
+        public GraphVizFile File
         {
-            get
-            {
-                return _welcomeTitle;
-            }
-            set
-            {
-                Set(ref _welcomeTitle, value);
-            }
+            get { return _file; }
+            set { _file = value; RaisePropertyChanged(); }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the MainViewModel class.
-        /// </summary>
-        public MainViewModel(IDataService dataService)
+        public MainViewModel(IFileReaderService fileReaderService)
         {
-            _dataService = dataService;
-            _dataService.GetData(
-                (item, error) =>
-                {
-                    if (error != null)
-                    {
-                        // Report error here
-                        return;
-                    }
+            _fileReaderService = fileReaderService;
+            OpenFileCommand = new RelayCommand(() => OpenFile(), () => true);
 
-                    WelcomeTitle = item.Title;
-                });
         }
 
-        ////public override void Cleanup()
-        ////{
-        ////    // Clean up if needed
-
-        ////    base.Cleanup();
-        ////}
+        public void OpenFile()
+        {
+            File = _fileReaderService.ReadFile();
+        }
     }
 }

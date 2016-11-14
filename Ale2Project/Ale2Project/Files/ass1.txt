@@ -1,0 +1,9 @@
+alphabet: ab
+states: Z,A,B
+final: A,B
+transitions:
+Z,a --> A
+Z,b --> B
+Z,_ --> B
+B,b --> B 
+end.

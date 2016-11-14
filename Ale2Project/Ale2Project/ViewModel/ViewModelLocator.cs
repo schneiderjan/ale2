@@ -13,6 +13,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Practices.ServiceLocation;
 using Ale2Project.Model;
+using Ale2Project.Service;
 
 namespace Ale2Project.ViewModel
 {
@@ -28,7 +29,12 @@ namespace Ale2Project.ViewModel
         static ViewModelLocator()
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
+
+            //ViewModels
             SimpleIoc.Default.Register<MainViewModel>();
+
+            //Services
+            SimpleIoc.Default.Register<IFileReaderService, FileReaderService>();
         }
 
         /// <summary>
