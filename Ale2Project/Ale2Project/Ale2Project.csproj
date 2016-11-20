@@ -81,7 +81,11 @@
     <Compile Include="Model\StateModel.cs" />
     <Compile Include="Model\TransitionModel.cs" />
     <Compile Include="Service\FileService.cs" />
+    <Compile Include="Service\GraphVizService.cs" />
     <Compile Include="Service\IFileService.cs" />
+    <Compile Include="Service\IGraphVizService.cs" />
+    <Compile Include="Service\IDfaCheckService.cs" />
+    <Compile Include="Service\DfaCheckService.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="MainWindow.xaml">

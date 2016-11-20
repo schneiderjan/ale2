@@ -35,6 +35,8 @@ namespace Ale2Project.ViewModel
 
             //Services
             SimpleIoc.Default.Register<IFileService, FileService>();
+            SimpleIoc.Default.Register<IGraphVizService,GraphVizService>();
+            SimpleIoc.Default.Register<IDfaCheckService, DfaCheckService>();
         }
 
         /// <summary>
@@ -43,13 +45,10 @@ namespace Ale2Project.ViewModel
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
             "CA1822:MarkMembersAsStatic",
             Justification = "This non-static member is needed for data binding purposes.")]
-        public MainViewModel MainViewModel
-        {
-            get
-            {
-                return ServiceLocator.Current.GetInstance<MainViewModel>();
-            }
-        }
+        public MainViewModel MainViewModel { get { return ServiceLocator.Current.GetInstance<MainViewModel>(); } }
+        public IFileService FileService { get { return ServiceLocator.Current.GetInstance<IFileService>(); } }
+        public IGraphVizService GraphVizService { get { return ServiceLocator.Current.GetInstance<IGraphVizService>(); } }
+        public IDfaCheckService NdaCheckService { get { return ServiceLocator.Current.GetInstance<IDfaCheckService>(); } }
 
         /// <summary>
         /// Cleans up all the resources.

@@ -1,4 +1,6 @@
-﻿using Ale2Project.Model;
+﻿using System.Collections.Generic;
+using System.Windows.Documents;
+using Ale2Project.Model;
 
 namespace Ale2Project.Service
 {
@@ -6,5 +8,6 @@ namespace Ale2Project.Service
     {
         GraphVizFileModel ReadFile();
         AutomatonModel ParseGraphVizFile(GraphVizFileModel graphVizFileModel);
+        void WriteGraphVizFileToDotFile(List<string> lines);
     }
 }

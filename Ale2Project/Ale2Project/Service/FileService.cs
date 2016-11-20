@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Ale2Project.Model;
 
@@ -7,8 +8,6 @@ namespace Ale2Project.Service
 {
     public class FileService : IFileService
     {
-        private int _i;
-
         public GraphVizFileModel ReadFile()
         {
             GraphVizFileModel fileModel = new GraphVizFileModel();
@@ -75,7 +74,7 @@ namespace Ale2Project.Service
                 {
                     var transitions = new List<TransitionModel>();
                     var lower = graphVizFileModel.Lines.IndexOf(line) + 1;
-                    var upper = graphVizFileModel.Lines.Count - lower;
+                    var upper = graphVizFileModel.Lines.Count - 1;
 
                     for (int i = lower; i < upper; i++)
                     {
@@ -91,11 +90,13 @@ namespace Ale2Project.Service
                         foreach (var state in automaton.States)
                         {
                             if (state.Name.Equals(beginStateString)) transition.BeginState = state;
-                            else if (state.Name.Equals(endStateString)) transition.EndState = state;
-
+                            if (state.Name.Equals(endStateString)) transition.EndState = state;
                             if (transition.BeginState != null && transition.EndState != null) break;
 
                         }
+
+                        //FindTransitionState(beginStateString, endStateString, transition, automaton);
+
                         valueString = valueString.ToLower();
                         if (valueString.Equals("_")) valueString = "E";
                         transition.Value = valueString;
@@ -108,6 +109,18 @@ namespace Ale2Project.Service
 
             }
             return automaton;
+        }
+
+        public void WriteGraphVizFileToDotFile(List<string> lines)
+        {
+            using (StreamWriter sw = new StreamWriter("dot.dot", false))
+            {
+                foreach (var line in lines)
+                {
+                    sw.WriteLine(line);
+                }
+                //sw.Dispose();
+            }
         }
 
         private string GetSubstring(string line, string splitter)

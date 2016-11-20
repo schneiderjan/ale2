@@ -17,8 +17,9 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="20"></RowDefinition>
-            <RowDefinition Height="24.8"></RowDefinition>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="24.8"/>
+            <RowDefinition Height="24.8" />
         </Grid.RowDefinitions>
 
         <DockPanel
@@ -33,11 +34,12 @@
             </Menu>
         </DockPanel>
 
-        <Grid 
+        <Grid
             Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label
@@ -53,7 +55,27 @@
                 HorizontalAlignment="Right"
                 Content="Parse File"
                 Command="{Binding ParseFileCommand}"/>
-            </Grid>
+            <Button Grid.Column="3"
+                    HorizontalAlignment="Right"
+                    Content="Show Automaton"
+                    Command="{Binding ShowAutomatonCommand}"/>
+        </Grid>
+        
+        <Grid 
+            Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock 
+                Grid.Column="0"
+                Text="IsNDA: "/>
+            <TextBlock
+                Grid.Column="1"
+                Text="{Binding IsNda}"/>
+            
+            
+        </Grid>
 
 
     </Grid>
