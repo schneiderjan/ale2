@@ -92,11 +92,7 @@ namespace Ale2Project.Service
                             if (state.Name.Equals(beginStateString)) transition.BeginState = state;
                             if (state.Name.Equals(endStateString)) transition.EndState = state;
                             if (transition.BeginState != null && transition.EndState != null) break;
-
                         }
-
-                        //FindTransitionState(beginStateString, endStateString, transition, automaton);
-
                         valueString = valueString.ToLower();
                         if (valueString.Equals("_")) valueString = "E";
                         transition.Value = valueString;
@@ -119,7 +115,7 @@ namespace Ale2Project.Service
                 {
                     sw.WriteLine(line);
                 }
-                //sw.Dispose();
+                sw.Dispose();
             }
         }
 
@@ -132,13 +128,6 @@ namespace Ale2Project.Service
         private List<string> SplitOnComma(string chars)
         {
             return chars.Split(',').ToList();
-        }
-
-        private TransitionModel ReadTransition(string line)
-        {
-            TransitionModel transition = new TransitionModel();
-
-            return transition;
         }
     }
 
