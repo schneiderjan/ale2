@@ -35,8 +35,9 @@ namespace Ale2Project.ViewModel
 
             //Services
             SimpleIoc.Default.Register<IFileService, FileService>();
-            SimpleIoc.Default.Register<IGraphVizService,GraphVizService>();
+            SimpleIoc.Default.Register<IGraphVizService, GraphVizService>();
             SimpleIoc.Default.Register<IDfaCheckService, DfaCheckService>();
+            SimpleIoc.Default.Register<IAcceptedStringCheckService, AcceptedStringCheckService>();
         }
 
         /// <summary>
@@ -49,6 +50,7 @@ namespace Ale2Project.ViewModel
         public IFileService FileService { get { return ServiceLocator.Current.GetInstance<IFileService>(); } }
         public IGraphVizService GraphVizService { get { return ServiceLocator.Current.GetInstance<IGraphVizService>(); } }
         public IDfaCheckService NdaCheckService { get { return ServiceLocator.Current.GetInstance<IDfaCheckService>(); } }
+        public IAcceptedStringCheckService AcceptedStringCheckService { get { return ServiceLocator.Current.GetInstance<IAcceptedStringCheckService>(); } }
 
         /// <summary>
         /// Cleans up all the resources.

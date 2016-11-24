@@ -1,5 +1,5 @@
-alphabet: abcdefghijk…
-states: A1,A2,A3,A4,A5,…
+alphabet: abcdefghij
+states: A1,A2,A3,A4,A5
 final: A2,A3,A4
 transitions:
 A1,a --> A2

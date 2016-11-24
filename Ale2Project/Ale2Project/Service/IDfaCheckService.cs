@@ -4,6 +4,6 @@ namespace Ale2Project.Service
 {
     public interface IDfaCheckService
     {
-        bool IsAutomatonNda(AutomatonModel automaton);
+        bool IsAutomatonDfa(AutomatonModel automaton);
     }
 }

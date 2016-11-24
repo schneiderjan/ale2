@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Documents;
 using Ale2Project.Model;
 
 namespace Ale2Project.Service
 {
     public class DfaCheckService : IDfaCheckService
     {
-        public bool IsAutomatonNda(AutomatonModel automaton)
+        public bool IsAutomatonDfa(AutomatonModel automaton)
         {
             //conditions:
             //outputs of all states are equal to alphabet count
@@ -26,7 +25,6 @@ namespace Ale2Project.Service
         {
             var finalStatesCount = automaton.States.Count(i => i.IsFinal);
             if (finalStatesCount > 1) return false;
-
             return true;
         }
 
@@ -56,7 +54,7 @@ namespace Ale2Project.Service
                         letters.Add(Convert.ToChar(automatonTransition.Value));
                     }
                 }
-                var sequenceEqual = Enumerable.SequenceEqual(letters.OrderBy(t => t), automaton.Alphabet.OrderBy(t => t));
+                var sequenceEqual = letters.OrderBy(t => t).SequenceEqual(automaton.Alphabet.OrderBy(t => t));
                 if (!sequenceEqual) return false;
             }
             return true;

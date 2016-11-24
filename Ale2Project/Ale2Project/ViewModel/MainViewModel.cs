@@ -1,4 +1,5 @@
-﻿using Ale2Project.Model;
+﻿using System;
+using Ale2Project.Model;
 using Ale2Project.Service;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
@@ -15,20 +16,31 @@ namespace Ale2Project.ViewModel
     {
         //Bindings
         private bool _isNda;
+        private bool _isStringAccepted;
 
         //Services
         private readonly IFileService _fileService;
         private readonly IGraphVizService _graphVizService;
         private readonly IDfaCheckService _ndaCheckService;
+        private readonly IAcceptedStringCheckService _acceptedStringCheckService;
 
         //Models
         private GraphVizFileModel _file;
         private AutomatonModel _automaton;
 
+        #region Commands
         //Commands
         private RelayCommand _parseFileCommand;
         private RelayCommand _openFileCommand;
         private RelayCommand _showAutomatonCommand;
+        private RelayCommand _verifyStringCommand;
+        private string _verifyStringInput;
+
+        public RelayCommand VerifyStringCommmand
+        {
+            get { return _verifyStringCommand; }
+            set { _verifyStringCommand = value; RaisePropertyChanged(); }
+        }
 
         public RelayCommand OpenFileCommand
         {
@@ -44,25 +56,7 @@ namespace Ale2Project.ViewModel
         public RelayCommand ShowAutomatonCommand
         {
             get { return _showAutomatonCommand; }
-            set { _showAutomatonCommand = value; }
-        }
-
-        public GraphVizFileModel File
-        {
-            get { return _file; }
-            set { _file = value; RaisePropertyChanged(); }
-        }
-
-        public AutomatonModel Automaton
-        {
-            get { return _automaton; }
-            set { _automaton = value; }
-        }
-
-        public bool IsNda
-        {
-            get { return _isNda; }
-            set { _isNda = value; RaisePropertyChanged(); }
+            set { _showAutomatonCommand = value; RaisePropertyChanged(); }
         }
 
         private bool ShowAutomatonCanExecute()
@@ -77,23 +71,69 @@ namespace Ale2Project.ViewModel
             else return false;
         }
 
+        public bool VerifyStringCanExecute()
+        {
+            if (!String.IsNullOrEmpty(_verifyStringInput) && Automaton != null) return true;
+            else return false;
+        }
+        #endregion
 
-        public MainViewModel(IFileService fileService, IGraphVizService graphVizService, IDfaCheckService ndaCheckService)
+        #region Properties
+        public GraphVizFileModel File
+        {
+            get { return _file; }
+            set { _file = value; RaisePropertyChanged(); }
+        }
+
+        public AutomatonModel Automaton
+        {
+            get { return _automaton; }
+            set { _automaton = value; VerifyStringCommmand.RaiseCanExecuteChanged(); }
+        }
+
+        public bool IsNda
+        {
+            get { return _isNda; }
+            set { _isNda = value; RaisePropertyChanged(); }
+        }
+
+        public bool IsStringAccepted
+        {
+            get { return _isStringAccepted; }
+            set { _isStringAccepted = value; RaisePropertyChanged(); }
+        }
+
+        public string VerifyStringInputInput
+        {
+            get { return _verifyStringInput; }
+            set
+            {
+                _verifyStringInput = value;
+                RaisePropertyChanged();
+                VerifyStringCommmand.RaiseCanExecuteChanged();
+            }
+        }
+
+        #endregion
+
+        public MainViewModel(IFileService fileService, IGraphVizService graphVizService, IDfaCheckService ndaCheckService, IAcceptedStringCheckService acceptedStringCheckService)
         {
             _fileService = fileService;
             _graphVizService = graphVizService;
             _ndaCheckService = ndaCheckService;
+            _acceptedStringCheckService = acceptedStringCheckService;
 
-            OpenFileCommand = new RelayCommand(() => OpenFile(), () => true);
-            ParseFileCommand = new RelayCommand(() => ParseFile(), () => ParseFileCanExecute());
-            ShowAutomatonCommand = new RelayCommand(() => ShowAutomaton(), () => ShowAutomatonCanExecute());
+            OpenFileCommand = new RelayCommand(OpenFile, () => true);
+            ParseFileCommand = new RelayCommand(ParseFile, ParseFileCanExecute);
+            ShowAutomatonCommand = new RelayCommand(ShowAutomaton, ShowAutomatonCanExecute);
+            VerifyStringCommmand = new RelayCommand(VerifyString, VerifyStringCanExecute);
         }
 
         private void ParseFile()
         {
             Automaton = _fileService.ParseGraphVizFile(File);
 
-            _automaton.IsNda = _ndaCheckService.IsAutomatonNda(_automaton);
+            _automaton.IsNda = _ndaCheckService.IsAutomatonDfa(_automaton);
             IsNda = _automaton.IsNda;
 
             ShowAutomatonCommand.RaiseCanExecuteChanged();
@@ -109,6 +149,11 @@ namespace Ale2Project.ViewModel
         {
             _fileService.WriteGraphVizFileToDotFile(File.Lines);
             _graphVizService.DisplayAutomaton();
+        }
+
+        private void VerifyString()
+        {
+            IsStringAccepted = _acceptedStringCheckService.IsAcceptedString(_verifyStringInput, Automaton);
         }
     }
 }

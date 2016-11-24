@@ -89,12 +89,20 @@ namespace Ale2Project.Service
 
                         foreach (var state in automaton.States)
                         {
-                            if (state.Name.Equals(beginStateString)) transition.BeginState = state;
+                            if (state.Name.Equals(beginStateString) && i == lower)
+                            {
+                                transition.BeginState = state;
+                                state.IsInitial = true;
+                            }
+                            else if (state.Name.Equals(beginStateString))
+                            {
+                                transition.BeginState = state;
+                            }
                             if (state.Name.Equals(endStateString)) transition.EndState = state;
                             if (transition.BeginState != null && transition.EndState != null) break;
                         }
                         valueString = valueString.ToLower();
-                        if (valueString.Equals("_")) valueString = "E";
+                        if (valueString.Equals("_")) valueString = "ε";
                         transition.Value = valueString;
 
                         transitions.Add(transition);
