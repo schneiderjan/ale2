@@ -15,7 +15,7 @@ namespace Ale2Project.ViewModel
     public class MainViewModel : ViewModelBase
     {
         //Bindings
-        private bool _isNda;
+        private bool _isDfa;
         private bool _isStringAccepted;
 
         //Services
@@ -91,10 +91,10 @@ namespace Ale2Project.ViewModel
             set { _automaton = value; VerifyStringCommmand.RaiseCanExecuteChanged(); }
         }
 
-        public bool IsNda
+        public bool IsDfa
         {
-            get { return _isNda; }
-            set { _isNda = value; RaisePropertyChanged(); }
+            get { return _isDfa; }
+            set { _isDfa = value; RaisePropertyChanged(); }
         }
 
         public bool IsStringAccepted
@@ -134,7 +134,7 @@ namespace Ale2Project.ViewModel
             Automaton = _fileService.ParseGraphVizFile(File);
 
             _automaton.IsNda = _ndaCheckService.IsAutomatonDfa(_automaton);
-            IsNda = _automaton.IsNda;
+            IsDfa = _automaton.IsNda;
 
             ShowAutomatonCommand.RaiseCanExecuteChanged();
         }

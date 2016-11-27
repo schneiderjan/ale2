@@ -67,7 +67,7 @@
             Grid.Row="2" 
             Margin="5,2,5,2">
             <TextBlock
-                Text="{Binding IsNda, StringFormat='IsNda: {0}'}"/>
+                Text="{Binding IsDfa, StringFormat='IsDfa: {0}'}"/>
         </Grid>
 
         <Grid 
