@@ -31,10 +31,10 @@ namespace Ale2Project.Service
                     var possibleTransition = possibleTransitions[index];
                     //check if transition is possible and if its the last one
                     if (possibleTransition.Value == value.ToString()
-                        && possibleTransition.EndState.IsFinal)
+                        )
                     {
                         nextStates.Add(possibleTransition.EndState);
-                        if (i == values.Count - 1) return true;
+                        if (i == values.Count - 1) return true;     //last value has transition
                     }
                     //check if transitions from this are possible.
                     else if (possibleTransition.Value == value.ToString())
@@ -43,9 +43,21 @@ namespace Ale2Project.Service
                     }
                     else if (possibleTransition.Value == "ε")
                     {
+                        //check if epsilon endState has a transition with value[index]
+                        //if yes add to nextstates
                         epsilonTransition = possibleTransition;
+                        var transitionsAfterEpsilon =
+                            automaton.Transitions.Where(
+                                transition =>
+                                    transition.BeginState == epsilonTransition.EndState &&
+                                    transition.Value == Convert.ToString(values[i]))
+                                    .ToList();
+                        foreach (var transition in transitionsAfterEpsilon) nextStates.Add(transition.BeginState);
                     }
 
+                    if (possibleTransition.EndState.IsFinal && 
+                        i == values.Count - 1 &&
+                        nextStates.Any()) return true;
                 }
                 //if yes then check the next state;
                 if (!nextStates.Any()) return false;
@@ -53,10 +65,6 @@ namespace Ale2Project.Service
                 currentStates.Clear();
                 currentStates = new List<StateModel>(nextStates);
                 nextStates.Clear();
-            }
-            if (epsilonTransition != null)
-            {
-                
             }
             return false;
         }
