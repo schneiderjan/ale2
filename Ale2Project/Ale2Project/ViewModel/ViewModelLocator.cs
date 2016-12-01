@@ -38,19 +38,44 @@ namespace Ale2Project.ViewModel
             SimpleIoc.Default.Register<IGraphVizService, GraphVizService>();
             SimpleIoc.Default.Register<IDfaCheckService, DfaCheckService>();
             SimpleIoc.Default.Register<IAcceptedStringCheckService, AcceptedStringCheckService>();
+            SimpleIoc.Default.Register<IRegularExpressionParserService, RegularExpressionParserService>();
         }
 
         /// <summary>
         /// Gets the Main property.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance",
-            "CA1822:MarkMembersAsStatic",
-            Justification = "This non-static member is needed for data binding purposes.")]
-        public MainViewModel MainViewModel { get { return ServiceLocator.Current.GetInstance<MainViewModel>(); } }
-        public IFileService FileService { get { return ServiceLocator.Current.GetInstance<IFileService>(); } }
-        public IGraphVizService GraphVizService { get { return ServiceLocator.Current.GetInstance<IGraphVizService>(); } }
-        public IDfaCheckService NdaCheckService { get { return ServiceLocator.Current.GetInstance<IDfaCheckService>(); } }
-        public IAcceptedStringCheckService AcceptedStringCheckService { get { return ServiceLocator.Current.GetInstance<IAcceptedStringCheckService>(); } }
+             "CA1822:MarkMembersAsStatic",
+             Justification = "This non-static member is needed for data binding purposes.")]
+        public MainViewModel MainViewModel
+        {
+            get { return ServiceLocator.Current.GetInstance<MainViewModel>(); }
+        }
+
+        public IFileService FileService
+        {
+            get { return ServiceLocator.Current.GetInstance<IFileService>(); }
+        }
+
+        public IGraphVizService GraphVizService
+        {
+            get { return ServiceLocator.Current.GetInstance<IGraphVizService>(); }
+        }
+
+        public IDfaCheckService DfaCheckService
+        {
+            get { return ServiceLocator.Current.GetInstance<IDfaCheckService>(); }
+        }
+
+        public IAcceptedStringCheckService AcceptedStringCheckService
+        {
+            get { return ServiceLocator.Current.GetInstance<IAcceptedStringCheckService>(); }
+        }
+
+        public IRegularExpressionParserService RegularExpressionParserService
+        {
+            get { return ServiceLocator.Current.GetInstance<IRegularExpressionParserService>(); }
+        }
 
         /// <summary>
         /// Cleans up all the resources.

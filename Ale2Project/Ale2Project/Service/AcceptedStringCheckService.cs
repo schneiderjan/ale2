@@ -15,8 +15,7 @@ namespace Ale2Project.Service
             List<StateModel> nextStates = new List<StateModel>();
             List<char> values = new List<char>();
             List<TransitionModel> possibleTransitions = new List<TransitionModel>();
-            TransitionModel epsilonTransition = new TransitionModel();
-
+            
             foreach (var c in input)
             {
                 values.Add(c);
@@ -30,14 +29,7 @@ namespace Ale2Project.Service
                 {
                     var possibleTransition = possibleTransitions[index];
                     //check if transition is possible and if its the last one
-                    if (possibleTransition.Value == value.ToString()
-                        )
-                    {
-                        nextStates.Add(possibleTransition.EndState);
-                        if (i == values.Count - 1) return true;     //last value has transition
-                    }
-                    //check if transitions from this are possible.
-                    else if (possibleTransition.Value == value.ToString())
+                    if (possibleTransition.Value == value.ToString())
                     {
                         nextStates.Add(possibleTransition.EndState);
                     }
@@ -45,14 +37,15 @@ namespace Ale2Project.Service
                     {
                         //check if epsilon endState has a transition with value[index]
                         //if yes add to nextstates
-                        epsilonTransition = possibleTransition;
                         var transitionsAfterEpsilon =
                             automaton.Transitions.Where(
                                 transition =>
-                                    transition.BeginState == epsilonTransition.EndState &&
+                                    transition.BeginState == possibleTransition.EndState &&
                                     transition.Value == Convert.ToString(values[i]))
                                     .ToList();
-                        foreach (var transition in transitionsAfterEpsilon) nextStates.Add(transition.BeginState);
+
+                        if (transitionsAfterEpsilon.Any())
+                            foreach (var transition in transitionsAfterEpsilon) nextStates.Add(transition.BeginState);
                     }
 
                     if (possibleTransition.EndState.IsFinal && 

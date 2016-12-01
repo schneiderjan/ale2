@@ -7,7 +7,7 @@ namespace Ale2Project.Model
         public List<StateModel> States { get; set; }
         public List<char> Alphabet { get; set; }
         public List<TransitionModel> Transitions { get; set; }
-        public bool IsNda { get; set; }
+        public bool IsDfa { get; set; }
 
         public AutomatonModel()
         {

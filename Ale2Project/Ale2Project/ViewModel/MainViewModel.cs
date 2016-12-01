@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Input;
 using Ale2Project.Model;
 using Ale2Project.Service;
 using GalaSoft.MvvmLight;
@@ -17,16 +18,20 @@ namespace Ale2Project.ViewModel
         //Bindings
         private bool _isDfa;
         private bool _isStringAccepted;
+        private string _verifyStringInput;
+        private string _regularExpressionInput;
 
         //Services
         private readonly IFileService _fileService;
         private readonly IGraphVizService _graphVizService;
         private readonly IDfaCheckService _ndaCheckService;
         private readonly IAcceptedStringCheckService _acceptedStringCheckService;
+        private readonly IRegularExpressionParserService _regularExpressionParserService;
 
         //Models
         private GraphVizFileModel _file;
         private AutomatonModel _automaton;
+        private AutomatonModel _automatonRe;
 
         #region Commands
         //Commands
@@ -34,7 +39,7 @@ namespace Ale2Project.ViewModel
         private RelayCommand _openFileCommand;
         private RelayCommand _showAutomatonCommand;
         private RelayCommand _verifyStringCommand;
-        private string _verifyStringInput;
+        private RelayCommand _parseRegularExpressionCommand;
 
         public RelayCommand VerifyStringCommmand
         {
@@ -76,6 +81,18 @@ namespace Ale2Project.ViewModel
             if (!String.IsNullOrEmpty(_verifyStringInput) && Automaton != null) return true;
             else return false;
         }
+
+        public RelayCommand ParseRegularExpressionCommand
+        {
+            get { return _parseRegularExpressionCommand; }
+            set { _parseRegularExpressionCommand = value; }
+        }
+
+        public bool ParseRegularExpressionCanExecute()
+        {
+            if (!string.IsNullOrEmpty(_regularExpressionInput)) return true;
+            return false;
+        }
         #endregion
 
         #region Properties
@@ -89,6 +106,12 @@ namespace Ale2Project.ViewModel
         {
             get { return _automaton; }
             set { _automaton = value; VerifyStringCommmand.RaiseCanExecuteChanged(); }
+        }
+
+        public AutomatonModel AutomatonRE
+        {
+            get { return _automatonRe; }
+            private set { _automatonRe = value; RaisePropertyChanged(); }
         }
 
         public bool IsDfa
@@ -108,33 +131,58 @@ namespace Ale2Project.ViewModel
             get { return _verifyStringInput; }
             set
             {
-                _verifyStringInput = value;
+       _verifyStringInput = value;
                 RaisePropertyChanged();
                 VerifyStringCommmand.RaiseCanExecuteChanged();
             }
         }
 
+        public string RegularExpressionInput
+        {
+            get { return _regularExpressionInput; }
+            set
+            {
+                _regularExpressionInput = value;
+                RaisePropertyChanged();
+                ParseRegularExpressionCommand.RaiseCanExecuteChanged();
+            }
+        }
+
         #endregion
 
-        public MainViewModel(IFileService fileService, IGraphVizService graphVizService, IDfaCheckService ndaCheckService, IAcceptedStringCheckService acceptedStringCheckService)
+        public MainViewModel(IFileService fileService,
+            IGraphVizService graphVizService,
+            IDfaCheckService ndaCheckService,
+            IAcceptedStringCheckService acceptedStringCheckService,
+            IRegularExpressionParserService regularExpressionParserService)
         {
             _fileService = fileService;
             _graphVizService = graphVizService;
             _ndaCheckService = ndaCheckService;
             _acceptedStringCheckService = acceptedStringCheckService;
+            _regularExpressionParserService = regularExpressionParserService;
 
             OpenFileCommand = new RelayCommand(OpenFile, () => true);
             ParseFileCommand = new RelayCommand(ParseFile, ParseFileCanExecute);
             ShowAutomatonCommand = new RelayCommand(ShowAutomaton, ShowAutomatonCanExecute);
             VerifyStringCommmand = new RelayCommand(VerifyString, VerifyStringCanExecute);
+            ParseRegularExpressionCommand = new RelayCommand(ParseRegularExpression, ParseRegularExpressionCanExecute);
+
+            RegularExpressionInput = "*(|(*(.(a,b)),c))";
+            //|(.(a,*(b)),*(c))
+        }
+
+        private void ParseRegularExpression()
+        {
+            AutomatonRE = _regularExpressionParserService.GetAutomaton(_regularExpressionInput);
         }
 
         private void ParseFile()
         {
             Automaton = _fileService.ParseGraphVizFile(File);
 
-            _automaton.IsNda = _ndaCheckService.IsAutomatonDfa(_automaton);
-            IsDfa = _automaton.IsNda;
+            _automaton.IsDfa = _ndaCheckService.IsAutomatonDfa(_automaton);
+            IsDfa = _automaton.IsDfa;
 
             ShowAutomatonCommand.RaiseCanExecuteChanged();
         }
