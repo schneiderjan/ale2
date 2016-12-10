@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Ale2Project.Model;
 using Ale2Project.Service;
@@ -28,7 +30,9 @@ namespace Ale2Project.ViewModel
         private readonly IAcceptedStringCheckService _acceptedStringCheckService;
         private readonly IRegularExpressionParserService _regularExpressionParserService;
 
-        //Models
+        //Models/Properties
+        private ObservableCollection<string> _fileLines;
+        private ObservableCollection<string> _regularExpressionLines;
         private GraphVizFileModel _file;
         private AutomatonModel _automaton;
         private AutomatonModel _automatonRe;
@@ -131,7 +135,7 @@ namespace Ale2Project.ViewModel
             get { return _verifyStringInput; }
             set
             {
-       _verifyStringInput = value;
+                _verifyStringInput = value;
                 RaisePropertyChanged();
                 VerifyStringCommmand.RaiseCanExecuteChanged();
             }
@@ -148,6 +152,18 @@ namespace Ale2Project.ViewModel
             }
         }
 
+        public ObservableCollection<string> FileLines
+        {
+            get { return _fileLines; }
+            set { _fileLines = value; RaisePropertyChanged(); }
+        }
+
+        public ObservableCollection<string> RegularExpressionLines
+        {
+            get { return _regularExpressionLines; }
+            set { _regularExpressionLines = value; RaisePropertyChanged();}
+        }
+
         #endregion
 
         public MainViewModel(IFileService fileService,
@@ -161,6 +177,8 @@ namespace Ale2Project.ViewModel
             _ndaCheckService = ndaCheckService;
             _acceptedStringCheckService = acceptedStringCheckService;
             _regularExpressionParserService = regularExpressionParserService;
+            
+            _file = new GraphVizFileModel();
 
             OpenFileCommand = new RelayCommand(OpenFile, () => true);
             ParseFileCommand = new RelayCommand(ParseFile, ParseFileCanExecute);
@@ -190,6 +208,7 @@ namespace Ale2Project.ViewModel
         private void OpenFile()
         {
             File = _fileService.ReadFile();
+            FileLines = new ObservableCollection<string>(File.Lines);
             ParseFileCommand.RaiseCanExecuteChanged();
         }
 

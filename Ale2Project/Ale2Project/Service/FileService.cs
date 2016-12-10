@@ -8,6 +8,10 @@ namespace Ale2Project.Service
 {
     public class FileService : IFileService
     {
+        private string states = "states:";
+        private string final = "final:";
+        private string alphabet = "alphabet:";
+
         public GraphVizFileModel ReadFile()
         {
             GraphVizFileModel fileModel = new GraphVizFileModel();
@@ -115,6 +119,8 @@ namespace Ale2Project.Service
             return automaton;
         }
 
+
+
         public void WriteGraphVizFileToDotFile(List<string> lines)
         {
             using (StreamWriter sw = new StreamWriter("dot.dot", false))
@@ -125,6 +131,15 @@ namespace Ale2Project.Service
                 }
                 sw.Dispose();
             }
+        }
+
+        public GraphVizFileModel ConvertAutomatonToGraphVizFile(AutomatonModel automaton)
+        {
+            var graphVizFile = new GraphVizFileModel();
+
+
+
+            return new GraphVizFileModel();
         }
 
         private string GetSubstring(string line, string splitter)

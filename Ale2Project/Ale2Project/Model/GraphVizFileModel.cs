@@ -14,5 +14,10 @@ namespace Ale2Project.Model
     {
         public string FilePath { get; set; }
         public List<string> Lines { get; set; }
+
+        public GraphVizFileModel()
+        {
+            Lines = new List<string>();
+        }
     }
 }
