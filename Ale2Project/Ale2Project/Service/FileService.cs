@@ -123,7 +123,7 @@ namespace Ale2Project.Service
 
         public void WriteGraphVizFileToDotFile(List<string> lines)
         {
-            using (StreamWriter sw = new StreamWriter("dot.dot", false))
+            using (StreamWriter sw = new StreamWriter("C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.dot", false))
             {
                 foreach (var line in lines)
                 {
@@ -133,13 +133,50 @@ namespace Ale2Project.Service
             }
         }
 
-        public GraphVizFileModel ConvertAutomatonToGraphVizFile(AutomatonModel automaton)
+        public GraphVizFileModel ConvertAutomatonToGenericFile(AutomatonModel automaton)
         {
             var graphVizFile = new GraphVizFileModel();
 
+            //ALPHABET
+            string alphabetLine = "";
+            foreach (var letter in automaton.Alphabet)
+            {
+                alphabetLine += letter;
+            }
+            graphVizFile.Lines.Add(alphabet + " " + alphabetLine);
 
+            //STATES
+            string statesLine = "";
+            for (int index = 0; index < automaton.States.Count; index++)
+            {
+                var automatonState = automaton.States[index];
+                if (index == automaton.States.Count - 1) statesLine += automatonState.Name;
+                else statesLine += automatonState.Name + ",";
+            }
+            graphVizFile.Lines.Add(states + " " + statesLine);
 
-            return new GraphVizFileModel();
+            //FINAL
+            var finalStates = automaton.States.Where(x => x.IsFinal);
+            var finalLine = "";
+            foreach (var finalState in finalStates)
+            {
+                finalLine += finalState.Name;
+            }
+            graphVizFile.Lines.Add(final + " " + finalLine);
+
+            //TRANSITIONS
+            graphVizFile.Lines.Add("transitions:");
+            foreach (var automatonTransition in automaton.Transitions)
+            {
+                var transitionLine =
+                    $"{automatonTransition.BeginState.Name},{automatonTransition.Value} --> {automatonTransition.EndState.Name}";
+                graphVizFile.Lines.Add(transitionLine);
+            }
+
+            //END.
+            graphVizFile.Lines.Add("end.");
+
+            return graphVizFile;
         }
 
         private string GetSubstring(string line, string splitter)

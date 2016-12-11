@@ -14,6 +14,11 @@
         <ResourceDictionary>
         </ResourceDictionary>
     </Window.Resources>
+    
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding CopyRELinesCommand}" Modifiers="Control" Key="C"/>
+    </Window.InputBindings>
+
 
     <Grid>
         <Grid.RowDefinitions>
@@ -131,7 +136,7 @@
                       ItemsSource="{Binding FileLines}"/>
             
             <ListView Grid.Column="1"
-                      ItemsSource="{Binding}"/>
+                      ItemsSource="{Binding RegularExpressionLines}"/>
 
         </Grid>
     </Grid>

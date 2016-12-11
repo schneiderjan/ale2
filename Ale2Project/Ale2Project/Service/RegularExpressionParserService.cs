@@ -30,6 +30,7 @@ namespace Ale2Project.Service
 
             var nodes = ParseRegularExpression(input);
             automaton = NodesToAutomaton(nodes);
+            stateCount = 0;
 
             return automaton;
         }
@@ -53,52 +54,64 @@ namespace Ale2Project.Service
                     var state1 = new StateModel { IsInitial = true, IsFinal = false, Name = stateCount++.ToString() };
                     var state2 = new StateModel { IsInitial = false, IsFinal = false, Name = stateCount++.ToString() };
                     var state3 = new StateModel { IsInitial = false, IsFinal = true, Name = stateCount++.ToString() };
-                    //var trans1 = new TransitionModel { BeginState = state1, EndState = state2, Value = "X" };
-                    //var trans2 = new TransitionModel { BeginState = state2, EndState = state3, Value = "Y" };
+
                     var dotAutomaton = new AutomatonModel()
                     {
                         States = { state1, state2, state3 },
-                        //Transitions = { trans1, trans2 }
                     };
                     automaton = dotAutomaton;
-                    leftState = state1;
-                    rightState = state3;
+
+                    if (IsOperandOrAsterix(currentNode.LeftChild.Value))
+                        BuildAutomaton(currentNode.LeftChild, currentNode, state1, state2);
+                    else
+                        automaton.Transitions.Add(new TransitionModel
+                        { BeginState = state1, EndState = state2, Value = currentNode.LeftChild.Value });
+
+                    if (IsOperandOrAsterix(currentNode.RightChild.Value))
+                        BuildAutomaton(currentNode.RightChild, currentNode, state2, state3);
+                    else
+                        automaton.Transitions.Add(new TransitionModel
+                        { BeginState = state2, EndState = state3, Value = currentNode.RightChild.Value });
                 }
                 else
                 {
                     var middleState = new StateModel { Name = stateCount++.ToString() };
-
+                    automaton.States.Add(middleState);
 
                     if (IsOperandOrAsterix(currentNode.LeftChild.Value))
                     {
-                        rightState = middleState;
-                        BuildAutomaton(currentNode.LeftChild, currentNode, leftState, rightState);
+                        BuildAutomaton(currentNode.LeftChild, currentNode, leftState, middleState);
                     }
                     else
                     {
-                        var trans = new TransitionModel()
+                        if (currentNode.LeftChild != null)
                         {
-                            BeginState = leftState,
-                            EndState = middleState,
-                            Value = currentNode.LeftChild.Value
-                        };
-                        automaton.Transitions.Add(trans);
+                            var trans = new TransitionModel
+                            {
+                                BeginState = leftState,
+                                EndState = middleState,
+                                Value = currentNode.LeftChild.Value
+                            };
+                            automaton.Transitions.Add(trans);
+                        }
                     }
 
                     if (IsOperandOrAsterix(currentNode.RightChild.Value))
                     {
-                        leftState = middleState;
-                        BuildAutomaton(currentNode.RightChild, currentNode, leftState, rightState);
+                        BuildAutomaton(currentNode.RightChild, currentNode, middleState, rightState);
                     }
                     else // in the value
                     {
-                        var trans = new TransitionModel()
+                        if (currentNode.RightChild != null)
                         {
-                            BeginState = middleState,
-                            EndState = rightState,
-                            Value = currentNode.RightChild.Value
-                        };
-                        automaton.Transitions.Add(trans);
+                            var trans = new TransitionModel()
+                            {
+                                BeginState = middleState,
+                                EndState = rightState,
+                                Value = currentNode.RightChild.Value
+                            };
+                            automaton.Transitions.Add(trans);
+                        }
                     }
                 }
 
@@ -115,7 +128,6 @@ namespace Ale2Project.Service
                     var state3 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
                     var state4 = new StateModel { IsFinal = true, IsInitial = false, Name = stateCount++.ToString() };
                     var trans1 = new TransitionModel { BeginState = state1, EndState = state2, Value = "ε" };
-                    //var trans2 = new TransitionModel { BeginState = state2, EndState = state3, Value = "X" };
                     var trans3 = new TransitionModel { BeginState = state3, EndState = state4, Value = "ε" };
                     var trans4 = new TransitionModel { BeginState = state1, EndState = state4, Value = "ε" };
                     var trans5 = new TransitionModel { BeginState = state3, EndState = state2, Value = "ε" };
@@ -126,62 +138,54 @@ namespace Ale2Project.Service
                         Transitions = { trans1, trans3, trans4, trans5 }
                     };
                     automaton = asterixAutomaton;
-                    leftState = state2;
-                    rightState = state3;
+
+                    if (IsOperandOrAsterix(currentNode.RightChild.Value))
+                        BuildAutomaton(currentNode.RightChild, currentNode, state2, state3);
+                    else
+                        automaton.Transitions.Add(new TransitionModel()
+                        { BeginState = state2, EndState = state3, Value = currentNode.RightChild.Value });
                 }
                 else
                 {
-                    //eventually its the rightChile
-                    if (IsOperandOrAsterix(currentNode.LeftChild.Value))
+                    var state1 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
+                    var state2 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
+                    var state3 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
+                    var state4 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
+
+                    var transLeftTo1 = new TransitionModel { BeginState = leftState, EndState = state1, Value = "ε" };
+                    var trans4ToRight = new TransitionModel { BeginState = state4, EndState = rightState, Value = "ε" };
+                    var trans1To2 = new TransitionModel { BeginState = state1, EndState = state2, Value = "ε" };
+                    var trans1To4 = new TransitionModel { BeginState = state1, EndState = state4, Value = "ε" };
+                    var trans3To2 = new TransitionModel { BeginState = state3, EndState = state2, Value = "ε" };
+                    var trans3To4 = new TransitionModel { BeginState = state3, EndState = state4, Value = "ε" };
+
+                    automaton.States.Add(state1);
+                    automaton.States.Add(state2);
+                    automaton.States.Add(state3);
+                    automaton.States.Add(state4);
+
+                    automaton.Transitions.Add(transLeftTo1);
+                    automaton.Transitions.Add(trans4ToRight);
+                    automaton.Transitions.Add(trans1To2);
+                    automaton.Transitions.Add(trans1To4);
+                    automaton.Transitions.Add(trans3To2);
+                    automaton.Transitions.Add(trans3To4);
+
+                    if (IsOperandOrAsterix(currentNode.RightChild.Value))
                     {
-                        var state1 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
-                        var state2 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
-                        var state3 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
-                        var state4 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
-                        var trans1 = new TransitionModel { BeginState = state1, EndState = state2, Value = "ε" };
-                        //var trans2 = new TransitionModel { BeginState = state2, EndState = state3, Value = "X" };
-                        var trans3 = new TransitionModel { BeginState = state3, EndState = state4, Value = "ε" };
-                        var trans4 = new TransitionModel { BeginState = state1, EndState = state4, Value = "ε" };
-                        var trans5 = new TransitionModel { BeginState = state3, EndState = state2, Value = "ε" };
-
-                        //transition from left to state1
-                        //transition from right to state4
-                        var transLeftToState1 = new TransitionModel()
-                        {
-                            BeginState = leftState,
-                            EndState = state1,
-                            Value = "ε"
-                        };
-                        var transState4ToRight = new TransitionModel()
-                        {
-                            BeginState = state4,
-                            EndState = rightState,
-                            Value = "ε"
-                        };
-
-                        automaton.States.Add(state1);
-                        automaton.States.Add(state2);
-                        automaton.States.Add(state3);
-                        automaton.States.Add(state4);
-                        automaton.Transitions.Add(trans1);
-                        automaton.Transitions.Add(trans3);
-                        automaton.Transitions.Add(trans4);
-                        automaton.Transitions.Add(trans5);
-                        automaton.Transitions.Add(transLeftToState1);
-                        automaton.Transitions.Add(transState4ToRight);
-
-                        leftState = state2;
-                        rightState = state3;
-                        BuildAutomaton(currentNode.RightChild, currentNode, leftState, rightState);
+                        BuildAutomaton(currentNode.RightChild, currentNode, state2, state3);
                     }
                     else
                     {
-                        automaton.Transitions.Add(new TransitionModel()
+                        if (currentNode.RightChild != null)
                         {
-                            BeginState = leftState,
-                            EndState = rightState,
-                            Value = currentNode.LeftChild.Value
-                        });
+                            automaton.Transitions.Add(new TransitionModel()
+                            {
+                                BeginState = state2,
+                                EndState = state3,
+                                Value = currentNode.RightChild.Value
+                            });
+                        }
                     }
                 }
 
@@ -195,32 +199,27 @@ namespace Ale2Project.Service
                 {
                     var state1 = new StateModel { IsInitial = true, IsFinal = false, Name = stateCount++.ToString() };
                     var state2 = new StateModel { IsInitial = false, IsFinal = true, Name = stateCount++.ToString() };
-                    //var trans1 = new TransitionModel { BeginState = state1, EndState = state2, Value = "X" };
-                    //var trans2 = new TransitionModel { BeginState = state1, EndState = state2, Value = "Y" };
-
                     var orAutomaton = new AutomatonModel
                     {
-                        //Transitions = { trans1, trans2 },
                         States = { state1, state2 }
                     };
+
                     automaton = orAutomaton;
-                    leftState = state1;
-                    rightState = state2;
+
+                    if (IsOperandOrAsterix(currentNode.LeftChild.Value))
+                        BuildAutomaton(currentNode.LeftChild, currentNode, state1, state2);
+                    else automaton.Transitions.Add(new TransitionModel
+                    { BeginState = state1, EndState = state2, Value = currentNode.LeftChild.Value });
+
+                    if (IsOperandOrAsterix(currentNode.RightChild.Value))
+                        BuildAutomaton(currentNode.RightChild, currentNode, state1, state2);
+                    else automaton.Transitions.Add(new TransitionModel
+                    { BeginState = state1, EndState = state2, Value = currentNode.RightChild.Value });
                 }
                 else
                 {
                     if (IsOperandOrAsterix(currentNode.LeftChild.Value))
                     {
-                        var newleftState = new StateModel { Name = stateCount++.ToString() };
-                        var transition = new TransitionModel
-                        {
-                            BeginState = leftState,
-                            EndState = newleftState,
-                            Value = "ε"
-                        };
-                        automaton.States.Add(newleftState);
-                        automaton.Transitions.Add(transition);
-
                         BuildAutomaton(currentNode.LeftChild, currentNode, leftState, rightState);
                     }
                     else
@@ -235,17 +234,6 @@ namespace Ale2Project.Service
 
                     if (IsOperandOrAsterix(currentNode.RightChild.Value))
                     {
-                        var newRightState = new StateModel() { Name = stateCount++.ToString() };
-                        var transition = new TransitionModel()
-                        {
-                            BeginState = rightState,
-                            EndState = newRightState,
-                            Value = "ε"
-                        };
-                        automaton.Transitions.Add(transition);
-                        automaton.States.Add(newRightState);
-                        rightState = newRightState;
-
                         BuildAutomaton(currentNode.RightChild, currentNode, leftState, rightState);
                     }
                     else
@@ -261,8 +249,6 @@ namespace Ale2Project.Service
             }
             #endregion
 
-
-            stateCount = 0;
             return automaton;
         }
 

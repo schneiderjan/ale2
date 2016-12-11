@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
 using Ale2Project.Model;
 using Ale2Project.Service;
@@ -34,6 +35,7 @@ namespace Ale2Project.ViewModel
         private ObservableCollection<string> _fileLines;
         private ObservableCollection<string> _regularExpressionLines;
         private GraphVizFileModel _file;
+        private GraphVizFileModel _fileRe;
         private AutomatonModel _automaton;
         private AutomatonModel _automatonRe;
 
@@ -44,6 +46,7 @@ namespace Ale2Project.ViewModel
         private RelayCommand _showAutomatonCommand;
         private RelayCommand _verifyStringCommand;
         private RelayCommand _parseRegularExpressionCommand;
+        private RelayCommand _copyReLinesCommand;
 
         public RelayCommand VerifyStringCommmand
         {
@@ -92,6 +95,14 @@ namespace Ale2Project.ViewModel
             set { _parseRegularExpressionCommand = value; }
         }
 
+
+        public RelayCommand CopyRELinesCommand
+        {
+            get { return _copyReLinesCommand; }
+            set { _copyReLinesCommand = value; RaisePropertyChanged(); }
+        }
+
+
         public bool ParseRegularExpressionCanExecute()
         {
             if (!string.IsNullOrEmpty(_regularExpressionInput)) return true;
@@ -104,6 +115,12 @@ namespace Ale2Project.ViewModel
         {
             get { return _file; }
             set { _file = value; RaisePropertyChanged(); }
+        }
+
+        public GraphVizFileModel FileRE
+        {
+            get { return _fileRe; }
+            set { _fileRe = value; RaisePropertyChanged(); }
         }
 
         public AutomatonModel Automaton
@@ -161,7 +178,7 @@ namespace Ale2Project.ViewModel
         public ObservableCollection<string> RegularExpressionLines
         {
             get { return _regularExpressionLines; }
-            set { _regularExpressionLines = value; RaisePropertyChanged();}
+            set { _regularExpressionLines = value; RaisePropertyChanged(); }
         }
 
         #endregion
@@ -177,7 +194,7 @@ namespace Ale2Project.ViewModel
             _ndaCheckService = ndaCheckService;
             _acceptedStringCheckService = acceptedStringCheckService;
             _regularExpressionParserService = regularExpressionParserService;
-            
+
             _file = new GraphVizFileModel();
 
             OpenFileCommand = new RelayCommand(OpenFile, () => true);
@@ -185,14 +202,21 @@ namespace Ale2Project.ViewModel
             ShowAutomatonCommand = new RelayCommand(ShowAutomaton, ShowAutomatonCanExecute);
             VerifyStringCommmand = new RelayCommand(VerifyString, VerifyStringCanExecute);
             ParseRegularExpressionCommand = new RelayCommand(ParseRegularExpression, ParseRegularExpressionCanExecute);
+            CopyRELinesCommand = new RelayCommand(CopyRELines, (() => true));
 
-            RegularExpressionInput = "*(|(*(.(a,b)),c))";
+
+            RegularExpressionInput = "|(a,*b)";
             //|(.(a,*(b)),*(c))
+            //|(*(a),.(b,c))
+            //"*(|(*(.(a,b)),c))"
+            //|(a,*b)
         }
 
         private void ParseRegularExpression()
         {
             AutomatonRE = _regularExpressionParserService.GetAutomaton(_regularExpressionInput);
+            FileRE = _graphVizService.ConvertToGraphVizFile(AutomatonRE);
+            RegularExpressionLines = new ObservableCollection<string>(_fileRe.Lines);
         }
 
         private void ParseFile()
@@ -221,6 +245,18 @@ namespace Ale2Project.ViewModel
         private void VerifyString()
         {
             IsStringAccepted = _acceptedStringCheckService.IsAcceptedString(_verifyStringInput, Automaton);
+        }
+
+        private void CopyRELines()
+         {
+            if (_fileRe == null) return;
+            var text = "";
+
+            foreach (var fileReLine in _fileRe.Lines)
+            {
+                text += fileReLine+Environment.NewLine;
+            }
+            Clipboard.SetText(text);
         }
     }
 }

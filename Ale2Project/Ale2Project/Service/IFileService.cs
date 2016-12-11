@@ -9,5 +9,6 @@ namespace Ale2Project.Service
         GraphVizFileModel ReadFile();
         AutomatonModel ParseGraphVizFile(GraphVizFileModel graphVizFileModel);
         void WriteGraphVizFileToDotFile(List<string> lines);
+        GraphVizFileModel ConvertAutomatonToGenericFile(AutomatonModel automaton);
     }
 }
