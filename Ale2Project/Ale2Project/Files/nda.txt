@@ -5,5 +5,5 @@ transitions:
 Z,a --> A
 Z,c --> B
 Z,_ --> B
-B,b --> B 
+B,b --> B
 end.

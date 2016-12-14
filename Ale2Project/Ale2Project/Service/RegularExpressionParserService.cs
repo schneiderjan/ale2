@@ -16,23 +16,23 @@ namespace Ale2Project.Service
             "|",
             "."
         };
-        private int stateCount = 0;
+        private int _stateCount = 0;
 
-        private string asterix = "*";
-        private string or = "|";
-        private string dot = ".";
+        private const string Asterix = "*";
+        private const string Or = "|";
+        private const string Dot = ".";
 
-        private AutomatonModel automaton;
+        private AutomatonModel _automaton;
 
         public AutomatonModel GetAutomaton(string input)
         {
-            automaton = new AutomatonModel();
+            _automaton = new AutomatonModel();
 
             var nodes = ParseRegularExpression(input);
-            automaton = NodesToAutomaton(nodes);
-            stateCount = 0;
+            _automaton = NodesToAutomaton(nodes);
+            _stateCount = 0;
 
-            return automaton;
+            return _automaton;
         }
 
         private AutomatonModel NodesToAutomaton(List<NodeModel> nodes)
@@ -47,36 +47,36 @@ namespace Ale2Project.Service
             if (currentNode == null) return null;
 
             #region dot
-            if (currentNode.Value == dot)
+            if (currentNode.Value == Dot)
             {
                 if (previousNode == null) //initial aut.
                 {
-                    var state1 = new StateModel { IsInitial = true, IsFinal = false, Name = stateCount++.ToString() };
-                    var state2 = new StateModel { IsInitial = false, IsFinal = false, Name = stateCount++.ToString() };
-                    var state3 = new StateModel { IsInitial = false, IsFinal = true, Name = stateCount++.ToString() };
+                    var state1 = new StateModel { IsInitial = true, IsFinal = false, Name = _stateCount++.ToString() };
+                    var state2 = new StateModel { IsInitial = false, IsFinal = false, Name = _stateCount++.ToString() };
+                    var state3 = new StateModel { IsInitial = false, IsFinal = true, Name = _stateCount++.ToString() };
 
                     var dotAutomaton = new AutomatonModel()
                     {
                         States = { state1, state2, state3 },
                     };
-                    automaton = dotAutomaton;
+                    _automaton = dotAutomaton;
 
                     if (IsOperandOrAsterix(currentNode.LeftChild.Value))
                         BuildAutomaton(currentNode.LeftChild, currentNode, state1, state2);
                     else
-                        automaton.Transitions.Add(new TransitionModel
+                        _automaton.Transitions.Add(new TransitionModel
                         { BeginState = state1, EndState = state2, Value = currentNode.LeftChild.Value });
 
                     if (IsOperandOrAsterix(currentNode.RightChild.Value))
                         BuildAutomaton(currentNode.RightChild, currentNode, state2, state3);
                     else
-                        automaton.Transitions.Add(new TransitionModel
+                        _automaton.Transitions.Add(new TransitionModel
                         { BeginState = state2, EndState = state3, Value = currentNode.RightChild.Value });
                 }
                 else
                 {
-                    var middleState = new StateModel { Name = stateCount++.ToString() };
-                    automaton.States.Add(middleState);
+                    var middleState = new StateModel { Name = _stateCount++.ToString() };
+                    _automaton.States.Add(middleState);
 
                     if (IsOperandOrAsterix(currentNode.LeftChild.Value))
                     {
@@ -92,7 +92,7 @@ namespace Ale2Project.Service
                                 EndState = middleState,
                                 Value = currentNode.LeftChild.Value
                             };
-                            automaton.Transitions.Add(trans);
+                            _automaton.Transitions.Add(trans);
                         }
                     }
 
@@ -110,7 +110,7 @@ namespace Ale2Project.Service
                                 EndState = rightState,
                                 Value = currentNode.RightChild.Value
                             };
-                            automaton.Transitions.Add(trans);
+                            _automaton.Transitions.Add(trans);
                         }
                     }
                 }
@@ -119,14 +119,14 @@ namespace Ale2Project.Service
             #endregion
 
             #region asterix
-            else if (currentNode.Value == asterix)
+            else if (currentNode.Value == Asterix)
             {
                 if (previousNode == null) //initial aut.
                 {
-                    var state1 = new StateModel { IsFinal = false, IsInitial = true, Name = stateCount++.ToString() };
-                    var state2 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
-                    var state3 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
-                    var state4 = new StateModel { IsFinal = true, IsInitial = false, Name = stateCount++.ToString() };
+                    var state1 = new StateModel { IsFinal = false, IsInitial = true, Name = _stateCount++.ToString() };
+                    var state2 = new StateModel { IsFinal = false, IsInitial = false, Name = _stateCount++.ToString() };
+                    var state3 = new StateModel { IsFinal = false, IsInitial = false, Name = _stateCount++.ToString() };
+                    var state4 = new StateModel { IsFinal = true, IsInitial = false, Name = _stateCount++.ToString() };
                     var trans1 = new TransitionModel { BeginState = state1, EndState = state2, Value = "ε" };
                     var trans3 = new TransitionModel { BeginState = state3, EndState = state4, Value = "ε" };
                     var trans4 = new TransitionModel { BeginState = state1, EndState = state4, Value = "ε" };
@@ -137,20 +137,20 @@ namespace Ale2Project.Service
                         States = { state1, state2, state3, state4 },
                         Transitions = { trans1, trans3, trans4, trans5 }
                     };
-                    automaton = asterixAutomaton;
+                    _automaton = asterixAutomaton;
 
                     if (IsOperandOrAsterix(currentNode.RightChild.Value))
                         BuildAutomaton(currentNode.RightChild, currentNode, state2, state3);
                     else
-                        automaton.Transitions.Add(new TransitionModel()
+                        _automaton.Transitions.Add(new TransitionModel()
                         { BeginState = state2, EndState = state3, Value = currentNode.RightChild.Value });
                 }
                 else
                 {
-                    var state1 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
-                    var state2 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
-                    var state3 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
-                    var state4 = new StateModel { IsFinal = false, IsInitial = false, Name = stateCount++.ToString() };
+                    var state1 = new StateModel { IsFinal = false, IsInitial = false, Name = _stateCount++.ToString() };
+                    var state2 = new StateModel { IsFinal = false, IsInitial = false, Name = _stateCount++.ToString() };
+                    var state3 = new StateModel { IsFinal = false, IsInitial = false, Name = _stateCount++.ToString() };
+                    var state4 = new StateModel { IsFinal = false, IsInitial = false, Name = _stateCount++.ToString() };
 
                     var transLeftTo1 = new TransitionModel { BeginState = leftState, EndState = state1, Value = "ε" };
                     var trans4ToRight = new TransitionModel { BeginState = state4, EndState = rightState, Value = "ε" };
@@ -159,17 +159,17 @@ namespace Ale2Project.Service
                     var trans3To2 = new TransitionModel { BeginState = state3, EndState = state2, Value = "ε" };
                     var trans3To4 = new TransitionModel { BeginState = state3, EndState = state4, Value = "ε" };
 
-                    automaton.States.Add(state1);
-                    automaton.States.Add(state2);
-                    automaton.States.Add(state3);
-                    automaton.States.Add(state4);
+                    _automaton.States.Add(state1);
+                    _automaton.States.Add(state2);
+                    _automaton.States.Add(state3);
+                    _automaton.States.Add(state4);
 
-                    automaton.Transitions.Add(transLeftTo1);
-                    automaton.Transitions.Add(trans4ToRight);
-                    automaton.Transitions.Add(trans1To2);
-                    automaton.Transitions.Add(trans1To4);
-                    automaton.Transitions.Add(trans3To2);
-                    automaton.Transitions.Add(trans3To4);
+                    _automaton.Transitions.Add(transLeftTo1);
+                    _automaton.Transitions.Add(trans4ToRight);
+                    _automaton.Transitions.Add(trans1To2);
+                    _automaton.Transitions.Add(trans1To4);
+                    _automaton.Transitions.Add(trans3To2);
+                    _automaton.Transitions.Add(trans3To4);
 
                     if (IsOperandOrAsterix(currentNode.RightChild.Value))
                     {
@@ -179,7 +179,7 @@ namespace Ale2Project.Service
                     {
                         if (currentNode.RightChild != null)
                         {
-                            automaton.Transitions.Add(new TransitionModel()
+                            _automaton.Transitions.Add(new TransitionModel()
                             {
                                 BeginState = state2,
                                 EndState = state3,
@@ -193,27 +193,27 @@ namespace Ale2Project.Service
             #endregion
 
             #region or
-            else if (currentNode.Value == or)
+            else if (currentNode.Value == Or)
             {
                 if (previousNode == null)
                 {
-                    var state1 = new StateModel { IsInitial = true, IsFinal = false, Name = stateCount++.ToString() };
-                    var state2 = new StateModel { IsInitial = false, IsFinal = true, Name = stateCount++.ToString() };
+                    var state1 = new StateModel { IsInitial = true, IsFinal = false, Name = _stateCount++.ToString() };
+                    var state2 = new StateModel { IsInitial = false, IsFinal = true, Name = _stateCount++.ToString() };
                     var orAutomaton = new AutomatonModel
                     {
                         States = { state1, state2 }
                     };
 
-                    automaton = orAutomaton;
+                    _automaton = orAutomaton;
 
                     if (IsOperandOrAsterix(currentNode.LeftChild.Value))
                         BuildAutomaton(currentNode.LeftChild, currentNode, state1, state2);
-                    else automaton.Transitions.Add(new TransitionModel
+                    else _automaton.Transitions.Add(new TransitionModel
                     { BeginState = state1, EndState = state2, Value = currentNode.LeftChild.Value });
 
                     if (IsOperandOrAsterix(currentNode.RightChild.Value))
                         BuildAutomaton(currentNode.RightChild, currentNode, state1, state2);
-                    else automaton.Transitions.Add(new TransitionModel
+                    else _automaton.Transitions.Add(new TransitionModel
                     { BeginState = state1, EndState = state2, Value = currentNode.RightChild.Value });
                 }
                 else
@@ -224,7 +224,7 @@ namespace Ale2Project.Service
                     }
                     else
                     {
-                        automaton.Transitions.Add(new TransitionModel()
+                        _automaton.Transitions.Add(new TransitionModel()
                         {
                             BeginState = leftState,
                             EndState = rightState,
@@ -238,7 +238,7 @@ namespace Ale2Project.Service
                     }
                     else
                     {
-                        automaton.Transitions.Add(new TransitionModel()
+                        _automaton.Transitions.Add(new TransitionModel()
                         {
                             BeginState = leftState,
                             EndState = rightState,
@@ -249,7 +249,7 @@ namespace Ale2Project.Service
             }
             #endregion
 
-            return automaton;
+            return _automaton;
         }
 
         private bool IsOperand(char i)
@@ -259,12 +259,12 @@ namespace Ale2Project.Service
 
         private bool IsAsterix(char i)
         {
-            return asterix.Equals(i.ToString());
+            return Asterix.Equals(i.ToString());
         }
 
         private bool IsOperandOrAsterix(string c)
         {
-            if (asterix.Equals(c) || operands.Contains(c)) return true;
+            if (Asterix.Equals(c) || operands.Contains(c)) return true;
             return false;
         }
 

@@ -28,12 +28,13 @@ namespace Ale2Project.ViewModel
         private readonly IFileService _fileService;
         private readonly IGraphVizService _graphVizService;
         private readonly IDfaCheckService _ndaCheckService;
-        private readonly IAcceptedStringCheckService _acceptedStringCheckService;
+        private readonly ILanguageCheckService _languageCheckService;
         private readonly IRegularExpressionParserService _regularExpressionParserService;
 
         //Models/Properties
         private ObservableCollection<string> _fileLines;
         private ObservableCollection<string> _regularExpressionLines;
+        private ObservableCollection<string> _words;
         private GraphVizFileModel _file;
         private GraphVizFileModel _fileRe;
         private AutomatonModel _automaton;
@@ -47,6 +48,7 @@ namespace Ale2Project.ViewModel
         private RelayCommand _verifyStringCommand;
         private RelayCommand _parseRegularExpressionCommand;
         private RelayCommand _copyReLinesCommand;
+        private RelayCommand _showAllWordsCommand;
 
         public RelayCommand VerifyStringCommmand
         {
@@ -69,6 +71,12 @@ namespace Ale2Project.ViewModel
         {
             get { return _showAutomatonCommand; }
             set { _showAutomatonCommand = value; RaisePropertyChanged(); }
+        }
+
+        public RelayCommand ShowAllWordsCommand
+        {
+            get { return _showAllWordsCommand; }
+            set { _showAllWordsCommand = value; RaisePropertyChanged();}
         }
 
         private bool ShowAutomatonCanExecute()
@@ -181,20 +189,26 @@ namespace Ale2Project.ViewModel
             set { _regularExpressionLines = value; RaisePropertyChanged(); }
         }
 
+        public ObservableCollection<string> Words
+        {
+            get { return _words; }
+            set { _words = value; RaisePropertyChanged(); }
+        }
         #endregion
 
         public MainViewModel(IFileService fileService,
             IGraphVizService graphVizService,
             IDfaCheckService ndaCheckService,
-            IAcceptedStringCheckService acceptedStringCheckService,
+            ILanguageCheckService languageCheckService,
             IRegularExpressionParserService regularExpressionParserService)
         {
             _fileService = fileService;
             _graphVizService = graphVizService;
             _ndaCheckService = ndaCheckService;
-            _acceptedStringCheckService = acceptedStringCheckService;
+            _languageCheckService = languageCheckService;
             _regularExpressionParserService = regularExpressionParserService;
 
+            _words = new ObservableCollection<string>();
             _file = new GraphVizFileModel();
 
             OpenFileCommand = new RelayCommand(OpenFile, () => true);
@@ -202,9 +216,9 @@ namespace Ale2Project.ViewModel
             ShowAutomatonCommand = new RelayCommand(ShowAutomaton, ShowAutomatonCanExecute);
             VerifyStringCommmand = new RelayCommand(VerifyString, VerifyStringCanExecute);
             ParseRegularExpressionCommand = new RelayCommand(ParseRegularExpression, ParseRegularExpressionCanExecute);
-            CopyRELinesCommand = new RelayCommand(CopyRELines, (() => true));
-
-
+            CopyRELinesCommand = new RelayCommand(CopyRELines, () => true);
+            ShowAllWordsCommand = new RelayCommand(ShowAllWords, ShowAutomatonCanExecute);
+            
             RegularExpressionInput = "|(a,*b)";
             //|(.(a,*(b)),*(c))
             //|(*(a),.(b,c))
@@ -227,6 +241,7 @@ namespace Ale2Project.ViewModel
             IsDfa = _automaton.IsDfa;
 
             ShowAutomatonCommand.RaiseCanExecuteChanged();
+            ShowAllWordsCommand.RaiseCanExecuteChanged();
         }
 
         private void OpenFile()
@@ -244,19 +259,25 @@ namespace Ale2Project.ViewModel
 
         private void VerifyString()
         {
-            IsStringAccepted = _acceptedStringCheckService.IsAcceptedString(_verifyStringInput, Automaton);
+            IsStringAccepted = _languageCheckService.IsAcceptedString(_verifyStringInput, Automaton);
         }
 
         private void CopyRELines()
-         {
+        {
             if (_fileRe == null) return;
             var text = "";
 
             foreach (var fileReLine in _fileRe.Lines)
             {
-                text += fileReLine+Environment.NewLine;
+                text += fileReLine + Environment.NewLine;
             }
             Clipboard.SetText(text);
+        }
+
+        private void ShowAllWords()
+        {
+            var words = _languageCheckService.GetAllWords(_automaton);
+            Words = new ObservableCollection<string>(words);
         }
     }
 }
