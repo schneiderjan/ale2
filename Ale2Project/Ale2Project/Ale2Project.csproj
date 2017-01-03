@@ -88,8 +88,8 @@
     <Compile Include="Service\ILanguageCheckService.cs" />
     <Compile Include="Service\IFileService.cs" />
     <Compile Include="Service\IGraphVizService.cs" />
-    <Compile Include="Service\IDfaCheckService.cs" />
-    <Compile Include="Service\DfaCheckService.cs" />
+    <Compile Include="Service\IDfaService.cs" />
+    <Compile Include="Service\DfaService.cs" />
     <Compile Include="Service\LanguageCheckService.cs" />
     <Compile Include="Service\IRegularExpressionParserService.cs" />
     <Compile Include="Service\RegularExpressionParserService.cs" />

@@ -36,7 +36,7 @@ namespace Ale2Project.ViewModel
             //Services
             SimpleIoc.Default.Register<IFileService, FileService>();
             SimpleIoc.Default.Register<IGraphVizService, GraphVizService>();
-            SimpleIoc.Default.Register<IDfaCheckService, DfaCheckService>();
+            SimpleIoc.Default.Register<IDfaService, DfaService>();
             SimpleIoc.Default.Register<ILanguageCheckService, LanguageCheckService>();
             SimpleIoc.Default.Register<IRegularExpressionParserService, RegularExpressionParserService>();
         }
@@ -62,9 +62,9 @@ namespace Ale2Project.ViewModel
             get { return ServiceLocator.Current.GetInstance<IGraphVizService>(); }
         }
 
-        public IDfaCheckService DfaCheckService
+        public IDfaService DfaService
         {
-            get { return ServiceLocator.Current.GetInstance<IDfaCheckService>(); }
+            get { return ServiceLocator.Current.GetInstance<IDfaService>(); }
         }
 
         public ILanguageCheckService LanguageCheckService

@@ -5,7 +5,7 @@ using Ale2Project.Model;
 
 namespace Ale2Project.Service
 {
-    public class DfaCheckService : IDfaCheckService
+    public class DfaService : IDfaService
     {
         public bool IsAutomatonDfa(AutomatonModel automaton)
         {
@@ -20,6 +20,28 @@ namespace Ale2Project.Service
             return true;
         }
 
+        public AutomatonModel ConvertNdfaToNfa(AutomatonModel ndfa)
+        {
+            var stateToEpsilonN = new Dictionary<StateModel, List<StateModel>>();
+
+            foreach (var state in ndfa.States)
+            {
+                foreach (var transition in ndfa.Transitions)
+                {
+                    if (transition.BeginState == state && transition.Value == "ε")
+                    {
+                        if (stateToEpsilonN.ContainsKey(state)) stateToEpsilonN[state].Add(transition.EndState);
+                        else stateToEpsilonN.Add(state, new List<StateModel> { state, transition.EndState });
+
+                        //Todo: recursively check for endstate if transition has epsilon
+                    }
+                }
+            }
+
+
+            //TODO: cHCNAGE
+            return ndfa;
+        }
 
         private bool HasOneFinalState(AutomatonModel automaton)
         {

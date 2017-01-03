@@ -81,6 +81,8 @@
             Margin="5,2,5,2">
             <TextBlock
                 Text="{Binding IsDfa, StringFormat='IsDfa: {0}'}"/>
+            <Button Content="Convert to Dfa"
+                    Command="{Binding ConvertToDfaCommand}"/>
         </Grid>
 
         <Grid 

@@ -27,7 +27,7 @@ namespace Ale2Project.ViewModel
         //Services
         private readonly IFileService _fileService;
         private readonly IGraphVizService _graphVizService;
-        private readonly IDfaCheckService _ndaCheckService;
+        private readonly IDfaService _dfaService;
         private readonly ILanguageCheckService _languageCheckService;
         private readonly IRegularExpressionParserService _regularExpressionParserService;
 
@@ -49,6 +49,7 @@ namespace Ale2Project.ViewModel
         private RelayCommand _parseRegularExpressionCommand;
         private RelayCommand _copyReLinesCommand;
         private RelayCommand _showAllWordsCommand;
+        private RelayCommand _convertToDfaCommand;
 
         public RelayCommand VerifyStringCommmand
         {
@@ -76,7 +77,7 @@ namespace Ale2Project.ViewModel
         public RelayCommand ShowAllWordsCommand
         {
             get { return _showAllWordsCommand; }
-            set { _showAllWordsCommand = value; RaisePropertyChanged();}
+            set { _showAllWordsCommand = value; RaisePropertyChanged(); }
         }
 
         private bool ShowAutomatonCanExecute()
@@ -114,6 +115,19 @@ namespace Ale2Project.ViewModel
         public bool ParseRegularExpressionCanExecute()
         {
             if (!string.IsNullOrEmpty(_regularExpressionInput)) return true;
+            return false;
+        }
+
+        public RelayCommand ConvertToDfaCommand
+        {
+            get { return _convertToDfaCommand; }
+            set { _convertToDfaCommand = value; RaisePropertyChanged(); }
+        }
+
+        public bool ConvertToDfaCanExecute()
+        {
+            if (_automaton != null && 
+                !_isDfa) return true;
             return false;
         }
         #endregion
@@ -194,17 +208,19 @@ namespace Ale2Project.ViewModel
             get { return _words; }
             set { _words = value; RaisePropertyChanged(); }
         }
+
+
         #endregion
 
         public MainViewModel(IFileService fileService,
             IGraphVizService graphVizService,
-            IDfaCheckService ndaCheckService,
+            IDfaService dfaService,
             ILanguageCheckService languageCheckService,
             IRegularExpressionParserService regularExpressionParserService)
         {
             _fileService = fileService;
             _graphVizService = graphVizService;
-            _ndaCheckService = ndaCheckService;
+            _dfaService = dfaService;
             _languageCheckService = languageCheckService;
             _regularExpressionParserService = regularExpressionParserService;
 
@@ -218,12 +234,18 @@ namespace Ale2Project.ViewModel
             ParseRegularExpressionCommand = new RelayCommand(ParseRegularExpression, ParseRegularExpressionCanExecute);
             CopyRELinesCommand = new RelayCommand(CopyRELines, () => true);
             ShowAllWordsCommand = new RelayCommand(ShowAllWords, ShowAutomatonCanExecute);
-            
+            ConvertToDfaCommand = new RelayCommand(ConvertToDfa, ConvertToDfaCanExecute);
+
             RegularExpressionInput = "|(a,*b)";
             //|(.(a,*(b)),*(c))
             //|(*(a),.(b,c))
             //"*(|(*(.(a,b)),c))"
             //|(a,*b)
+        }
+
+        private void ConvertToDfa()
+        {
+            //_dfaService.
         }
 
         private void ParseRegularExpression()
@@ -237,7 +259,7 @@ namespace Ale2Project.ViewModel
         {
             Automaton = _fileService.ParseGraphVizFile(File);
 
-            _automaton.IsDfa = _ndaCheckService.IsAutomatonDfa(_automaton);
+            _automaton.IsDfa = _dfaService.IsAutomatonDfa(_automaton);
             IsDfa = _automaton.IsDfa;
 
             ShowAutomatonCommand.RaiseCanExecuteChanged();
