@@ -126,7 +126,7 @@ namespace Ale2Project.ViewModel
 
         public bool ConvertToDfaCanExecute()
         {
-            if (_automaton != null && 
+            if (_automaton != null &&
                 !_isDfa) return true;
             return false;
         }
@@ -245,7 +245,7 @@ namespace Ale2Project.ViewModel
 
         private void ConvertToDfa()
         {
-            //_dfaService.
+            var nfa = _dfaService.ConvertNdfaToNfa(Automaton);
         }
 
         private void ParseRegularExpression()
@@ -264,6 +264,7 @@ namespace Ale2Project.ViewModel
 
             ShowAutomatonCommand.RaiseCanExecuteChanged();
             ShowAllWordsCommand.RaiseCanExecuteChanged();
+            ConvertToDfaCommand.RaiseCanExecuteChanged();
         }
 
         private void OpenFile()

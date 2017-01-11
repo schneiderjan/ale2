@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Ale2Project.Model;
 
 namespace Ale2Project.Service
@@ -22,25 +23,97 @@ namespace Ale2Project.Service
 
         public AutomatonModel ConvertNdfaToNfa(AutomatonModel ndfa)
         {
+            var nfa = new AutomatonModel();
+
+            //Find epsilon transitions for each state
             var stateToEpsilonN = new Dictionary<StateModel, List<StateModel>>();
+            foreach (var state in ndfa.States)
+            {
+                FindEpsilonN(ndfa, stateToEpsilonN, state);
+            }
+
+            nfa = BuildNfa(ndfa, stateToEpsilonN);
+
+            //create new state
+            //create transition to that state
+            //add to nfa
+
+
+
+
+            //start at intial state and find all transitions end states of each letter in the alphabet
+            //foreach end state check stateToEpsilonN E* column for new state.
+            //and 
+
+            return nfa;
+        }
+
+        private AutomatonModel BuildNfa(AutomatonModel ndfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
+        {
+            var initialState = ndfa.States.FirstOrDefault(x => x.IsInitial);
+            if (initialState == null) throw new Exception("No initial state found.");
+            var stateStack = new Stack<StateModel>();
+            stateStack.Push(initialState);
+
+            var nfa = new AutomatonModel();
+            FindNewTransitions(initialState, stateStack, stateToEpsilonN, ndfa, nfa);
+            return nfa;
+        }
+
+        private void FindNewTransitions(StateModel currentState, Stack<StateModel> stateStack, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel nfa)
+        {
+            if (!stateStack.Any()) return;
 
             foreach (var state in ndfa.States)
             {
-                foreach (var transition in ndfa.Transitions)
+                foreach (var letter in ndfa.Alphabet)
                 {
-                    if (transition.BeginState == state && transition.Value == "ε")
+                    foreach (var transition in ndfa.Transitions)
                     {
-                        if (stateToEpsilonN.ContainsKey(state)) stateToEpsilonN[state].Add(transition.EndState);
-                        else stateToEpsilonN.Add(state, new List<StateModel> { state, transition.EndState });
+                        //check if state is in epsilon transition
+                        if (currentState == state &&
+                            state == transition.BeginState &&
+                            letter.ToString() == transition.Value)
+                        {
+                            var epsilonStates = stateToEpsilonN[state];
+                            var newState = new StateModel();
+                            foreach (var epsilonState in epsilonStates)
+                            {
+                                newState.Name += epsilonState.Name;
+                            }
 
-                        //Todo: recursively check for endstate if transition has epsilon
+                            if (!nfa.States.Contains(newState))
+                            {
+                                stateStack.Push(newState);
+                            }
+                           
+                            //TODO: Verify if transition is good
+                            nfa.Transitions.Add(new TransitionModel
+                            {
+                                BeginState = currentState,
+                                EndState = newState,
+                                Value = letter.ToString()
+                            });
+                            
+                            if (stateStack.Any()) FindNewTransitions(stateStack.Pop(), stateStack, stateToEpsilonN, ndfa, nfa);
+                        }
                     }
                 }
             }
+        }
 
+        private void FindEpsilonN(AutomatonModel ndfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, StateModel state)
+        {
+            foreach (var transition in ndfa.Transitions)
+            {
+                if (transition.BeginState == state && transition.Value == "ε")
+                {
+                    if (stateToEpsilonN.ContainsKey(state)) stateToEpsilonN[state].Add(transition.EndState);
+                    else stateToEpsilonN.Add(state, new List<StateModel> { state, transition.EndState });
 
-            //TODO: cHCNAGE
-            return ndfa;
+                    FindEpsilonN(ndfa, stateToEpsilonN, transition.EndState);
+                }
+            }
         }
 
         private bool HasOneFinalState(AutomatonModel automaton)
