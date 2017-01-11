@@ -1,0 +1,12 @@
+alphabet: abc
+states: 1,2,3,4
+final: 3
+transitions:
+1,a --> 2
+1,c --> 4
+2,_ --> 1
+2,b --> 3
+3,a --> 2
+4,_ --> 3
+4,c --> 3
+end.

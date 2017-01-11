@@ -52,18 +52,18 @@ namespace Ale2Project.Service
         {
             var initialState = ndfa.States.FirstOrDefault(x => x.IsInitial);
             if (initialState == null) throw new Exception("No initial state found.");
-            var stateStack = new Stack<StateModel>();
-            stateStack.Push(initialState);
+            var stateStack = new Stack<List<StateModel>>();
+            stateStack.Push(new List<StateModel>() { initialState });
 
             var nfa = new AutomatonModel();
-            FindNewTransitions(initialState, stateStack, stateToEpsilonN, ndfa, nfa);
+            FindNewTransitions(stateStack.Pop(), stateStack, stateToEpsilonN, ndfa, nfa);
+
+            nfa.Alphabet = ndfa.Alphabet;
             return nfa;
         }
 
-        private void FindNewTransitions(StateModel currentState, Stack<StateModel> stateStack, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel nfa)
+        private void FindNewTransitions(List<StateModel> currentStates, Stack<List<StateModel>> stateStack, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel nfa)
         {
-            if (!stateStack.Any()) return;
-
             foreach (var state in ndfa.States)
             {
                 foreach (var letter in ndfa.Alphabet)
@@ -71,31 +71,44 @@ namespace Ale2Project.Service
                     foreach (var transition in ndfa.Transitions)
                     {
                         //check if state is in epsilon transition
-                        if (currentState == state &&
+                        if (currentStates.Contains(state) &&
                             state == transition.BeginState &&
                             letter.ToString() == transition.Value)
                         {
-                            var epsilonStates = stateToEpsilonN[state];
+                            var epsilonStates = stateToEpsilonN[transition.EndState];
+                            var newStatesForStack = new List<StateModel>();
                             var newState = new StateModel();
+
                             foreach (var epsilonState in epsilonStates)
                             {
-                                newState.Name += epsilonState.Name;
+                                newStatesForStack.Add(epsilonState);
+                                newState.Name += epsilonState.Name + ",";
+                            }
+
+                            if (newState.Name.EndsWith(",")) newState.Name = newState.Name.TrimEnd(',');
+
+
+                            //TODO: eventually add something extra for final state
+                            if ((state.IsInitial || state.IsFinal) &&
+                                !nfa.States.Contains(state))
+                            {
+                                nfa.States.Add(state);
                             }
 
                             if (!nfa.States.Contains(newState))
                             {
-                                stateStack.Push(newState);
+                                nfa.States.Add(newState);
+                                stateStack.Push(newStatesForStack);
+
+                                nfa.Transitions.Add(new TransitionModel
+                                {
+                                    BeginState = state,
+                                    EndState = newState,
+                                    Value = letter.ToString()
+                                });
                             }
-                           
-                            //TODO: Verify if transition is good
-                            nfa.Transitions.Add(new TransitionModel
-                            {
-                                BeginState = currentState,
-                                EndState = newState,
-                                Value = letter.ToString()
-                            });
-                            
-                            if (stateStack.Any()) FindNewTransitions(stateStack.Pop(), stateStack, stateToEpsilonN, ndfa, nfa);
+
+                            //if (stateStack.Any()) FindNewTransitions(stateStack.Pop(), stateStack, stateToEpsilonN, ndfa, nfa);
                         }
                     }
                 }
