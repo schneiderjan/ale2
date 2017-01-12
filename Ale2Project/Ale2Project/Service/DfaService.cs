@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using Ale2Project.Model;
 
 namespace Ale2Project.Service
@@ -42,18 +43,6 @@ namespace Ale2Project.Service
             }
 
             nfa = BuildNfa(ndfa, stateToEpsilonN);
-
-            //create new state
-            //create transition to that state
-            //add to nfa
-
-
-
-
-            //start at intial state and find all transitions end states of each letter in the alphabet
-            //foreach end state check stateToEpsilonN E* column for new state.
-            //and 
-
             return nfa;
         }
 
@@ -61,17 +50,27 @@ namespace Ale2Project.Service
         {
             var initialState = ndfa.States.FirstOrDefault(x => x.IsInitial);
             if (initialState == null) throw new Exception("No initial state found.");
+            var initList = new List<StateModel> { initialState };
+            var stack = new Stack<List<StateModel>>();
+            stack.Push(initList);
 
+            var interNfa = new IntermediateNfaAutomatonModel();
+            FindNewStates(stack, stateToEpsilonN, ndfa, interNfa);
+           //TODO: make FindNewTransitions
             var nfa = new AutomatonModel();
-            FindNewTransitions(new List<StateModel> { initialState }, stateToEpsilonN, ndfa, nfa);
-
             nfa.Alphabet = ndfa.Alphabet;
+
+
             return nfa;
         }
 
-        private void FindNewTransitions(List<StateModel> currentStates,
-            Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel nfa)
+        private void FindNewStates(Stack<List<StateModel>> stack,
+            Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, IntermediateNfaAutomatonModel nfa)
         {
+            List<StateModel> currentStates;
+            if (stack.Any()) currentStates = stack.Pop();
+            else return;
+
             foreach (var currentState in currentStates)
             {
                 foreach (var state in ndfa.States)
@@ -98,31 +97,26 @@ namespace Ale2Project.Service
 
                                 //TODO: eventually add something extra for final state
                                 if ((state.IsInitial || state.IsFinal) &&
-                                    !nfa.States.Contains(state))
+                                    nfa.States.All(s => s.Name != state.Name))
                                 {
                                     nfa.States.Add(state);
                                 }
-
+                                else if (transition.EndState.IsFinal &&
+                                         nfa.States.All(s => s.Name != transition.EndState.Name))
+                                {
+                                    nfa.States.Add(transition.EndState);
+                                }
+                                stack.Push(newStatesForRecursion);
                                 if (nfa.States.All(s => s.Name != newState.Name))
                                 {
                                     nfa.States.Add(newState);
-                                    //stateStack.Push(newStatesForStack);
-
-                                    nfa.Transitions.Add(new TransitionModel
-                                    {
-                                        BeginState = state,
-                                        EndState = newState,
-                                        Value = letter.ToString()
-                                    });
                                 }
-
-                                if (newStatesForRecursion.Any())
-                                    FindNewTransitions(newStatesForRecursion, stateToEpsilonN, ndfa, nfa);
                             }
                         }
                     }
                 }
             }
+            FindNewStates(stack, stateToEpsilonN, ndfa, nfa);
         }
 
         private void FindEpsilonN(AutomatonModel ndfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, StateModel state)
