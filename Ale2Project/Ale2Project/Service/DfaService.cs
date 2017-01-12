@@ -66,7 +66,22 @@ namespace Ale2Project.Service
 
         private void FindNewTransitions(List<IntermediateNfaStateModel> stackHistory, AutomatonModel ndfa, AutomatonModel nfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
         {
-            //add states
+            foreach (var history in stackHistory)
+            {
+                foreach (var letter in ndfa.Alphabet)
+                {
+                    foreach (var state in history.States)
+                    {
+                        var epsilonN = stateToEpsilonN[state];
+                        if ()
+                        {
+                            
+                        }
+                    }
+
+                }
+                
+            }
         }
 
         private void FindNewStates(Stack<List<StateModel>> stack, List<IntermediateNfaStateModel> stackHistory,
