@@ -54,21 +54,29 @@ namespace Ale2Project.Service
             var stack = new Stack<List<StateModel>>();
             stack.Push(initList);
 
-            var interNfa = new IntermediateNfaAutomatonModel();
-            FindNewStates(stack, stateToEpsilonN, ndfa, interNfa);
-           //TODO: make FindNewTransitions
             var nfa = new AutomatonModel();
+            var stackHistory = new List<IntermediateNfaStateModel>();
+            FindNewStates(stack, stackHistory, stateToEpsilonN, ndfa, nfa);
+            stackHistory = stackHistory.DistinctBy(s => s.Name).ToList();
+            FindNewTransitions(stackHistory, ndfa, nfa, stateToEpsilonN);
+
             nfa.Alphabet = ndfa.Alphabet;
-
-
             return nfa;
         }
 
-        private void FindNewStates(Stack<List<StateModel>> stack,
-            Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, IntermediateNfaAutomatonModel nfa)
+        private void FindNewTransitions(List<IntermediateNfaStateModel> stackHistory, AutomatonModel ndfa, AutomatonModel nfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
+        {
+            //add states
+        }
+
+        private void FindNewStates(Stack<List<StateModel>> stack, List<IntermediateNfaStateModel> stackHistory,
+            Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel nfa)
         {
             List<StateModel> currentStates;
-            if (stack.Any()) currentStates = stack.Pop();
+            if (stack.Any())
+            {
+                currentStates = stack.Pop();
+            }
             else return;
 
             foreach (var currentState in currentStates)
@@ -84,6 +92,7 @@ namespace Ale2Project.Service
                                 state == transition.BeginState &&
                                 letter.ToString() == transition.Value)
                             {
+                                AddToStackHistory(stackHistory, currentStates);
                                 var epsilonStates = stateToEpsilonN[transition.EndState];
                                 var newStatesForRecursion = new List<StateModel>();
                                 var newState = new StateModel();
@@ -95,28 +104,62 @@ namespace Ale2Project.Service
                                 }
                                 if (newState.Name.EndsWith(",")) newState.Name = newState.Name.TrimEnd(',');
 
+
+
                                 //TODO: eventually add something extra for final state
                                 if ((state.IsInitial || state.IsFinal) &&
                                     nfa.States.All(s => s.Name != state.Name))
                                 {
                                     nfa.States.Add(state);
+                                    
                                 }
                                 else if (transition.EndState.IsFinal &&
                                          nfa.States.All(s => s.Name != transition.EndState.Name))
                                 {
                                     nfa.States.Add(transition.EndState);
+                                    stackHistory.Add(new IntermediateNfaStateModel()
+                                    {
+                                        Name = transition.EndState.Name,
+                                        States = new List<StateModel> { transition.EndState }
+                                    });
                                 }
-                                stack.Push(newStatesForRecursion);
+
                                 if (nfa.States.All(s => s.Name != newState.Name))
                                 {
                                     nfa.States.Add(newState);
+                                    stack.Push(newStatesForRecursion);
                                 }
+                                FindNewStates(stack, stackHistory, stateToEpsilonN, ndfa, nfa);
+
+                                //nfa.Transitions.Add(new TransitionModel
+                                //{
+                                //    BeginState = state,
+                                //    EndState = newState,
+                                //    Value = letter.ToString()
+                                //});
                             }
                         }
                     }
                 }
             }
-            FindNewStates(stack, stateToEpsilonN, ndfa, nfa);
+        }
+
+        private void AddToStackHistory(List<IntermediateNfaStateModel> stackHistory, List<StateModel> currentStates)
+        {
+            var name = "";
+
+            foreach (var currentState in currentStates)
+            {
+                name += currentState.Name + ",";
+            }
+            if (name.EndsWith(",")) name = name.TrimEnd(',');
+
+            stackHistory.Add(new IntermediateNfaStateModel
+            {
+                Name = name,
+                States = currentStates
+            });
+
         }
 
         private void FindEpsilonN(AutomatonModel ndfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, StateModel state)

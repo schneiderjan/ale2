@@ -8,9 +8,9 @@ namespace Ale2Project.Model
 {
     public class IntermediateNfaStateModel
     {
-        public IntermediateNfaStateModel(List<StateModel> states)
+        public IntermediateNfaStateModel()
         {
-            States = states;
+            States = new List<StateModel>();
         }
 
         public string Name { get; set; }
