@@ -70,14 +70,7 @@ namespace Ale2Project.Service
             {
                 foreach (var letter in ndfa.Alphabet)
                 {
-                    foreach (var state in history.States)
-                    {
-                        var epsilonN = stateToEpsilonN[state];
-                        if ()
-                        {
-                            
-                        }
-                    }
+                    
 
                 }
                 
