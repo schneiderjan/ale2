@@ -129,7 +129,6 @@ namespace Ale2Project.Service
                 {
                     sw.WriteLine(line);
                 }
-                sw.Dispose();
             }
         }
 

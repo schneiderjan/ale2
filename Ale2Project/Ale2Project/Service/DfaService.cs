@@ -31,6 +31,15 @@ namespace Ale2Project.Service
             {
                 FindEpsilonN(ndfa, stateToEpsilonN, state);
             }
+            //FindEpsilonN only adds the E* which have an actual E transitions
+            //but does not consider the state itself then, hence the loop below
+            foreach (var state in ndfa.States)
+            {
+                if (!stateToEpsilonN.ContainsKey(state))
+                {
+                    stateToEpsilonN.Add(state, new List<StateModel> { state });
+                }
+            }
 
             nfa = BuildNfa(ndfa, stateToEpsilonN);
 
@@ -52,63 +61,64 @@ namespace Ale2Project.Service
         {
             var initialState = ndfa.States.FirstOrDefault(x => x.IsInitial);
             if (initialState == null) throw new Exception("No initial state found.");
-            var stateStack = new Stack<List<StateModel>>();
-            stateStack.Push(new List<StateModel>() { initialState });
 
             var nfa = new AutomatonModel();
-            FindNewTransitions(stateStack.Pop(), stateStack, stateToEpsilonN, ndfa, nfa);
+            FindNewTransitions(new List<StateModel> { initialState }, stateToEpsilonN, ndfa, nfa);
 
             nfa.Alphabet = ndfa.Alphabet;
             return nfa;
         }
 
-        private void FindNewTransitions(List<StateModel> currentStates, Stack<List<StateModel>> stateStack, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel nfa)
+        private void FindNewTransitions(List<StateModel> currentStates,
+            Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel nfa)
         {
-            foreach (var state in ndfa.States)
+            foreach (var currentState in currentStates)
             {
-                foreach (var letter in ndfa.Alphabet)
+                foreach (var state in ndfa.States)
                 {
-                    foreach (var transition in ndfa.Transitions)
+                    foreach (var letter in ndfa.Alphabet)
                     {
-                        //check if state is in epsilon transition
-                        if (currentStates.Contains(state) &&
-                            state == transition.BeginState &&
-                            letter.ToString() == transition.Value)
+                        foreach (var transition in ndfa.Transitions)
                         {
-                            var epsilonStates = stateToEpsilonN[transition.EndState];
-                            var newStatesForStack = new List<StateModel>();
-                            var newState = new StateModel();
-
-                            foreach (var epsilonState in epsilonStates)
+                            //check if state is in epsilon transition
+                            if (currentState == state &&
+                                state == transition.BeginState &&
+                                letter.ToString() == transition.Value)
                             {
-                                newStatesForStack.Add(epsilonState);
-                                newState.Name += epsilonState.Name + ",";
-                            }
+                                var epsilonStates = stateToEpsilonN[transition.EndState];
+                                var newStatesForRecursion = new List<StateModel>();
+                                var newState = new StateModel();
 
-                            if (newState.Name.EndsWith(",")) newState.Name = newState.Name.TrimEnd(',');
-
-
-                            //TODO: eventually add something extra for final state
-                            if ((state.IsInitial || state.IsFinal) &&
-                                !nfa.States.Contains(state))
-                            {
-                                nfa.States.Add(state);
-                            }
-
-                            if (!nfa.States.Contains(newState))
-                            {
-                                nfa.States.Add(newState);
-                                stateStack.Push(newStatesForStack);
-
-                                nfa.Transitions.Add(new TransitionModel
+                                foreach (var epsilonState in epsilonStates)
                                 {
-                                    BeginState = state,
-                                    EndState = newState,
-                                    Value = letter.ToString()
-                                });
-                            }
+                                    newStatesForRecursion.Add(epsilonState);
+                                    newState.Name += epsilonState.Name + ",";
+                                }
+                                if (newState.Name.EndsWith(",")) newState.Name = newState.Name.TrimEnd(',');
 
-                            //if (stateStack.Any()) FindNewTransitions(stateStack.Pop(), stateStack, stateToEpsilonN, ndfa, nfa);
+                                //TODO: eventually add something extra for final state
+                                if ((state.IsInitial || state.IsFinal) &&
+                                    !nfa.States.Contains(state))
+                                {
+                                    nfa.States.Add(state);
+                                }
+
+                                if (nfa.States.All(s => s.Name != newState.Name))
+                                {
+                                    nfa.States.Add(newState);
+                                    //stateStack.Push(newStatesForStack);
+
+                                    nfa.Transitions.Add(new TransitionModel
+                                    {
+                                        BeginState = state,
+                                        EndState = newState,
+                                        Value = letter.ToString()
+                                    });
+                                }
+
+                                if (newStatesForRecursion.Any())
+                                    FindNewTransitions(newStatesForRecursion, stateToEpsilonN, ndfa, nfa);
+                            }
                         }
                     }
                 }
