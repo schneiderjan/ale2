@@ -6,7 +6,7 @@
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="d ignore"
         Height="500"
-        Width="775"
+        Width="1025"
         Title="MVVM Light Application"
         DataContext="{Binding MainViewModel, Source={StaticResource Locator}}">
 
@@ -14,9 +14,10 @@
         <ResourceDictionary>
         </ResourceDictionary>
     </Window.Resources>
-    
+
     <Window.InputBindings>
         <KeyBinding Command="{Binding CopyRELinesCommand}" Modifiers="Control" Key="C"/>
+        <KeyBinding Command="{Binding CopyConvertLinesCommand}" Modifiers="Control" Key="X"/>
     </Window.InputBindings>
 
 
@@ -139,13 +140,17 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
+                <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
             <ListView Grid.Column="0"
                       ItemsSource="{Binding FileLines}"/>
-            
+
             <ListView Grid.Column="1"
                       ItemsSource="{Binding RegularExpressionLines}"/>
+            
+            <ListView Grid.Column="2"
+                      ItemsSource="{Binding ConvertedDfaLines}"/>
 
         </Grid>
     </Grid>

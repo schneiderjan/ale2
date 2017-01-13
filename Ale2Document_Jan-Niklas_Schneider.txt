@@ -1,0 +1,3 @@
+Graphviz not working.
+to copy middle list view have the application window selected and do ctrl + C
+to copy right list view have the application window selected and do ctrl + X

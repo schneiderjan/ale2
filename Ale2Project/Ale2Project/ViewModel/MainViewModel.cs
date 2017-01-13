@@ -39,6 +39,8 @@ namespace Ale2Project.ViewModel
         private GraphVizFileModel _fileRe;
         private AutomatonModel _automaton;
         private AutomatonModel _automatonRe;
+        private AutomatonModel _convertedDfa;
+
 
         #region Commands
         //Commands
@@ -50,6 +52,15 @@ namespace Ale2Project.ViewModel
         private RelayCommand _copyReLinesCommand;
         private RelayCommand _showAllWordsCommand;
         private RelayCommand _convertToDfaCommand;
+        private RelayCommand _copyConvertLinesCommand;
+        private GraphVizFileModel _fileConvertedDfa;
+        private ObservableCollection<string> _convertedDfaLines;
+
+        public RelayCommand CopyConvertLinesCommand
+        {
+            get { return _copyConvertLinesCommand; }
+            set { _copyConvertLinesCommand = value; RaisePropertyChanged(); }
+        }
 
         public RelayCommand VerifyStringCommmand
         {
@@ -139,6 +150,17 @@ namespace Ale2Project.ViewModel
             set { _file = value; RaisePropertyChanged(); }
         }
 
+        public GraphVizFileModel FileConvertedDfa
+        {
+            get { return _fileConvertedDfa; }
+            set { _fileConvertedDfa = value; RaisePropertyChanged();}
+        }
+        public ObservableCollection<string> ConvertedDfaLines
+        {
+            get { return _convertedDfaLines; }
+            set { _convertedDfaLines = value; RaisePropertyChanged(); }
+        }
+
         public GraphVizFileModel FileRE
         {
             get { return _fileRe; }
@@ -191,6 +213,12 @@ namespace Ale2Project.ViewModel
             }
         }
 
+        public AutomatonModel ConvertedDfa
+        {
+            get { return _convertedDfa; }
+            set { _convertedDfa = value; RaisePropertyChanged();}
+        }
+
         public ObservableCollection<string> FileLines
         {
             get { return _fileLines; }
@@ -235,6 +263,7 @@ namespace Ale2Project.ViewModel
             CopyRELinesCommand = new RelayCommand(CopyRELines, () => true);
             ShowAllWordsCommand = new RelayCommand(ShowAllWords, ShowAutomatonCanExecute);
             ConvertToDfaCommand = new RelayCommand(ConvertToDfa, ConvertToDfaCanExecute);
+            CopyConvertLinesCommand = new RelayCommand(CopyConvertLines, () => true);
 
             RegularExpressionInput = "|(a,*b)";
             //|(.(a,*(b)),*(c))
@@ -245,7 +274,9 @@ namespace Ale2Project.ViewModel
 
         private void ConvertToDfa()
         {
-            var nfa = _dfaService.ConvertNdfaToNfa(Automaton);
+            ConvertedDfa = _dfaService.ConvertNdfaToNfa(Automaton);
+            FileConvertedDfa = _graphVizService.ConvertToGraphVizFile(ConvertedDfa);
+            ConvertedDfaLines = new ObservableCollection<string>(_fileConvertedDfa.Lines);
         }
 
         private void ParseRegularExpression()
@@ -293,6 +324,18 @@ namespace Ale2Project.ViewModel
             foreach (var fileReLine in _fileRe.Lines)
             {
                 text += fileReLine + Environment.NewLine;
+            }
+            Clipboard.SetText(text);
+        }
+
+        private void CopyConvertLines()
+        {
+            if (_convertedDfaLines == null) return;
+            var text = "";
+
+            foreach (var line in _fileConvertedDfa.Lines)
+            {
+                text += line + Environment.NewLine;
             }
             Clipboard.SetText(text);
         }
