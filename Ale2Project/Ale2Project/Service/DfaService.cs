@@ -66,14 +66,12 @@ namespace Ale2Project.Service
 
         private void FindNewTransitions(List<IntermediateNfaStateModel> stackHistory, AutomatonModel ndfa, AutomatonModel nfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
         {
-            foreach (var history in stackHistory)
+            foreach (var transition in ndfa.Transitions)
             {
-                foreach (var letter in ndfa.Alphabet)
-                {
-                    
-
-                }
-                
+                //check each transition in original automaton for each letter
+                //beginstate must be in stackhistory and endstate is E*
+                //then the transition is beginstate = stackhistory combined and end state is E*
+                //there must be verified if the transition in the new automaton already exists
             }
         }
 
