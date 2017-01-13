@@ -54,25 +54,93 @@ namespace Ale2Project.Service
             var stack = new Stack<List<StateModel>>();
             stack.Push(initList);
 
-            var nfa = new AutomatonModel();
+            var dfa = new AutomatonModel();
             var stackHistory = new List<IntermediateNfaStateModel>();
-            FindNewStates(stack, stackHistory, stateToEpsilonN, ndfa, nfa);
+            FindNewStates(stack, stackHistory, stateToEpsilonN, ndfa, dfa);
             stackHistory = stackHistory.DistinctBy(s => s.Name).ToList();
-            FindNewTransitions(stackHistory, ndfa, nfa, stateToEpsilonN);
+            FindNewTransitions(stackHistory, ndfa, dfa, stateToEpsilonN);
 
-            nfa.Alphabet = ndfa.Alphabet;
-            return nfa;
+            dfa.Alphabet = ndfa.Alphabet;
+            return dfa;
         }
 
-        private void FindNewTransitions(List<IntermediateNfaStateModel> stackHistory, AutomatonModel ndfa, AutomatonModel nfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
+        private void FindNewTransitions(List<IntermediateNfaStateModel> stackHistory, AutomatonModel ndfa, AutomatonModel dfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
         {
-            foreach (var transition in ndfa.Transitions)
+            //check each transition in original automaton for each letter
+            //beginstate must be in stackhistory and endstate is E*
+            //then the transition is beginstate = stackhistory combined and end state is E*
+            //there must be verified if the transition in the new automaton already exists
+            foreach (var history in stackHistory)
             {
-                //check each transition in original automaton for each letter
-                //beginstate must be in stackhistory and endstate is E*
-                //then the transition is beginstate = stackhistory combined and end state is E*
-                //there must be verified if the transition in the new automaton already exists
+                foreach (var historyState in history.States)
+                {
+                    foreach (var transition in ndfa.Transitions)
+                    {
+                        foreach (var letter in ndfa.Alphabet)
+                        {
+                            if (historyState == transition.BeginState &&
+                                transition.Value == letter.ToString())
+                            {
+                                var epsilonStates = stateToEpsilonN[transition.EndState];
+                                if (history.States.Count == 1)
+                                {
+                                    if (historyState.IsInitial ||
+                                        historyState.IsFinal)
+                                    {
+                                        var endStateName = "";
+                                        foreach (var epsilonState in epsilonStates)
+                                        {
+                                            if (epsilonState == epsilonStates[epsilonStates.Count - 1]) endStateName += epsilonState.Name;
+                                            else endStateName += epsilonState.Name + ",";
+                                        }
+                                        var endState = new StateModel { Name = endStateName };
+
+                                        var trans = new TransitionModel
+                                        {
+                                            BeginState = historyState,
+                                            EndState = endState,
+                                            Value = letter.ToString()
+                                        };
+
+                                        if (dfa.States.All(s => s.Name != historyState.Name)) dfa.States.Add(historyState);
+                                        if (dfa.States.All(s => s.Name != endState.Name)) dfa.States.Add(endState);
+                                        dfa.Transitions.Add(trans);
+                                    }
+                                }
+                                else if (history.States.Count > 1)
+                                {
+                                    var beginStateName = "";
+                                    foreach (var state in history.States)
+                                    {
+                                        if (state == history.States[history.States.Count - 1]) beginStateName += state.Name;
+                                        else beginStateName += state.Name + ",";
+                                    }
+                                    var beginState = new StateModel { Name = beginStateName };
+
+                                    var endStateName = "";
+                                    foreach (var epsilonState in epsilonStates)
+                                    {
+                                        if (epsilonState == epsilonStates[epsilonStates.Count - 1]) endStateName += epsilonState.Name;
+                                        else endStateName += epsilonState.Name + ",";
+                                    }
+                                    var endState = new StateModel { Name = endStateName };
+
+                                    var trans = new TransitionModel
+                                    {
+                                        BeginState = beginState,
+                                        EndState = endState,
+                                        Value = letter.ToString()
+                                    };
+                                    if (dfa.States.All(s => s.Name != endState.Name)) dfa.States.Add(endState);
+                                    if (dfa.States.All(s => s.Name != beginState.Name)) dfa.States.Add(beginState);
+                                    dfa.Transitions.Add(trans);
+                                }
+                            }
+                        }
+                    }
+                }
             }
+
         }
 
         private void FindNewStates(Stack<List<StateModel>> stack, List<IntermediateNfaStateModel> stackHistory,
@@ -117,7 +185,7 @@ namespace Ale2Project.Service
                                     nfa.States.All(s => s.Name != state.Name))
                                 {
                                     nfa.States.Add(state);
-                                    
+
                                 }
                                 else if (transition.EndState.IsFinal &&
                                          nfa.States.All(s => s.Name != transition.EndState.Name))
@@ -137,7 +205,7 @@ namespace Ale2Project.Service
                                 }
                                 FindNewStates(stack, stackHistory, stateToEpsilonN, ndfa, nfa);
 
-                                //nfa.Transitions.Add(new TransitionModel
+                                //dfa.Transitions.Add(new TransitionModel
                                 //{
                                 //    BeginState = state,
                                 //    EndState = newState,
@@ -153,12 +221,12 @@ namespace Ale2Project.Service
         private void AddToStackHistory(List<IntermediateNfaStateModel> stackHistory, List<StateModel> currentStates)
         {
             var name = "";
-
             foreach (var currentState in currentStates)
             {
-                name += currentState.Name + ",";
+                name += currentState == currentStates[currentStates.Count - 1]
+                    ? currentState.Name
+                    : currentState.Name + ",";
             }
-            if (name.EndsWith(",")) name = name.TrimEnd(',');
 
             stackHistory.Add(new IntermediateNfaStateModel
             {
