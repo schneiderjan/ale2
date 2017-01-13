@@ -12,5 +12,7 @@ namespace Ale2Project.Model
         public StateModel BeginState { get; set; }
         public StateModel EndState { get; set; }
         public string Value { get; set; }
+        public string LeftStackValue { get; set; }
+        public string RightStackValue { get; set; }
     }
 }

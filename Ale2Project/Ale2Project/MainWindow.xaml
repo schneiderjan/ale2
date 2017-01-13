@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="d ignore"
-        Height="500"
+        Height="800"
         Width="1025"
         Title="MVVM Light Application"
         DataContext="{Binding MainViewModel, Source={StaticResource Locator}}">
@@ -29,6 +29,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto"/>
             <RowDefinition MinHeight="300" 
+                           Height="Auto"/>
+            <RowDefinition MinHeight="300"
                            Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -80,8 +82,13 @@
         <Grid 
             Grid.Row="2" 
             Margin="5,2,5,2">
+            
             <TextBlock
                 Text="{Binding IsDfa, StringFormat='IsDfa: {0}'}"/>
+            <TextBlock
+                Text="{Binding IsPda, StringFormat='IsPda: {0}'}"
+                Margin="0,25,0,0"/>
+            
             <Button Content="Convert to Dfa"
                     Command="{Binding ConvertToDfaCommand}"
                     HorizontalAlignment="Right"/>
@@ -151,6 +158,25 @@
             
             <ListView Grid.Column="2"
                       ItemsSource="{Binding ConvertedDfaLines}"/>
+
+        </Grid>
+
+        <Grid Row="6"
+              Margin="5,2,5,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <ListView Grid.Column="0"
+                      ItemsSource="{Binding Words}"/>
+
+            <ListView Grid.Column="1"
+                      />
+
+            <ListView Grid.Column="2"
+                      />
 
         </Grid>
     </Grid>

@@ -40,6 +40,7 @@ namespace Ale2Project.Service
             string states = "states:";
             string final = "final:";
             string alphabet = "alphabet:";
+            string stack = "stack:";
 
             var automaton = new AutomatonModel();
             foreach (var line in graphVizFileModel.Lines)
@@ -51,6 +52,15 @@ namespace Ale2Project.Service
                     {
                         automaton.Alphabet.Add(char.ToLower(c));
                     }
+                }
+                else if (line.Contains(stack))
+                {
+                    var chars = GetSubstring(line, stack);
+                    foreach (var c in chars)
+                    {
+                        automaton.AccecptedStack.Add(char.ToLower(c).ToString());
+                    }
+                    automaton.IsPda = true;
                 }
                 else if (line.Contains(states))
                 {
@@ -76,41 +86,15 @@ namespace Ale2Project.Service
                 }
                 else if (line.Contains("transitions"))
                 {
-                    var transitions = new List<TransitionModel>();
+
                     var lower = graphVizFileModel.Lines.IndexOf(line) + 1;
                     var upper = graphVizFileModel.Lines.Count - 1;
 
-                    for (int i = lower; i < upper; i++)
-                    {
-                        var transition = new TransitionModel();
+                    var transitions = new List<TransitionModel>();
+                    transitions = !automaton.IsPda ?
+                        ReadRegularAutomatonTransitions(graphVizFileModel, lower, upper, automaton) :
+                        ReadPdaTransitions(graphVizFileModel, lower, upper, automaton);
 
-                        var transitionString = graphVizFileModel.Lines[i];
-                        var beginStateString = transitionString.Substring(0, transitionString.IndexOf(',')).Trim();
-                        var valueString =
-                            transitionString.Substring(transitionString.IndexOf(',') + 1, transitionString.IndexOf('-') - 2)
-                                .Trim();
-                        var endStateString = transitionString.Substring(transitionString.IndexOf('>') + 1).Trim();
-
-                        foreach (var state in automaton.States)
-                        {
-                            if (state.Name.Equals(beginStateString) && i == lower)
-                            {
-                                transition.BeginState = state;
-                                state.IsInitial = true;
-                            }
-                            else if (state.Name.Equals(beginStateString))
-                            {
-                                transition.BeginState = state;
-                            }
-                            if (state.Name.Equals(endStateString)) transition.EndState = state;
-                            if (transition.BeginState != null && transition.EndState != null) break;
-                        }
-                        valueString = valueString.ToLower();
-                        if (valueString.Equals("_")) valueString = "ε";
-                        transition.Value = valueString;
-
-                        transitions.Add(transition);
-                    }
                     automaton.Transitions = transitions;
                     break;
                 }
@@ -119,6 +103,88 @@ namespace Ale2Project.Service
             return automaton;
         }
 
+        private List<TransitionModel> ReadRegularAutomatonTransitions(GraphVizFileModel graphVizFileModel, int lower, int upper, AutomatonModel automaton)
+        {
+            var transitions = new List<TransitionModel>();
+            for (int i = lower; i < upper; i++)
+            {
+                var transition = new TransitionModel();
+
+                var transitionString = graphVizFileModel.Lines[i];
+                var beginStateString = transitionString.Substring(0, transitionString.IndexOf(',')).Trim();
+                var valueString =
+                    transitionString.Substring(transitionString.IndexOf(',') + 1, transitionString.IndexOf('-') - 2)
+                        .Trim();
+                var endStateString = transitionString.Substring(transitionString.IndexOf('>') + 1).Trim();
+
+                foreach (var state in automaton.States)
+                {
+                    if (state.Name.Equals(beginStateString) && i == lower)
+                    {
+                        transition.BeginState = state;
+                        state.IsInitial = true;
+                    }
+                    else if (state.Name.Equals(beginStateString))
+                    {
+                        transition.BeginState = state;
+                    }
+                    if (state.Name.Equals(endStateString)) transition.EndState = state;
+                    if (transition.BeginState != null && transition.EndState != null) break;
+                }
+                valueString = valueString.ToLower();
+                if (valueString.Equals("_")) valueString = "ε";
+                transition.Value = valueString;
+
+                transitions.Add(transition);
+            }
+            return transitions;
+        }
+
+        private List<TransitionModel> ReadPdaTransitions(GraphVizFileModel graphVizFileModel, int lower, int upper, AutomatonModel automaton)
+        {
+            var transitions = new List<TransitionModel>();
+            for (int i = lower; i < upper; i++)
+            {
+                var transition = new TransitionModel();
+
+                var transitionString = graphVizFileModel.Lines[i];
+                var beginStateString = transitionString.Substring(0, transitionString.IndexOf(',')).Trim();
+                var valueString =
+                    transitionString.Substring(transitionString.IndexOf(',') + 1, transitionString.IndexOf('[') - 2)
+                        .Trim();
+                var leftStackString = transitionString.Substring(transitionString.IndexOf('[') + 1,
+                    transitionString.IndexOf(',')).ToLower();
+
+                var rightStackString = transitionString.Substring(transitionString.IndexOf(',', transitionString.IndexOf(',') + 1) + 1, 1).ToLower();
+
+                var endStateString = transitionString.Substring(transitionString.IndexOf('>') + 1).Trim();
+
+                foreach (var state in automaton.States)
+                {
+                    if (state.Name.Equals(beginStateString) && i == lower)
+                    {
+                        transition.BeginState = state;
+                        state.IsInitial = true;
+                    }
+                    else if (state.Name.Equals(beginStateString))
+                    {
+                        transition.BeginState = state;
+                    }
+                    if (state.Name.Equals(endStateString)) transition.EndState = state;
+                    if (transition.BeginState != null && transition.EndState != null) break;
+                }
+                valueString = valueString.ToLower();
+                if (valueString.Equals("_")) valueString = "ε";
+                if (leftStackString.Equals("_")) leftStackString = "ε";
+                if (rightStackString.Equals("_")) rightStackString = "ε";
+
+                transition.RightStackValue = rightStackString;
+                transition.LeftStackValue = leftStackString;
+                transition.Value = valueString;
+                transitions.Add(transition);
+            }
+            return transitions;
+        }
 
 
         public void WriteGraphVizFileToDotFile(List<string> lines)

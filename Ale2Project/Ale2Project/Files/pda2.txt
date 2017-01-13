@@ -1,0 +1,14 @@
+# at any moment: number of a's >= c's and b's >= d's
+
+alphabet: abcd
+stack: xy
+states: S
+final: S
+transitions:
+S,a [_,x] --> S
+S,b [_,y] --> S
+S,c [x,_] --> S
+S,d [y,_] --> S
+S,_ [x,_] --> S
+S,_ [y,_] --> S
+end.

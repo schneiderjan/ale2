@@ -55,6 +55,7 @@ namespace Ale2Project.ViewModel
         private RelayCommand _copyConvertLinesCommand;
         private GraphVizFileModel _fileConvertedDfa;
         private ObservableCollection<string> _convertedDfaLines;
+        private bool _isPda;
 
         public RelayCommand CopyConvertLinesCommand
         {
@@ -149,11 +150,16 @@ namespace Ale2Project.ViewModel
             get { return _file; }
             set { _file = value; RaisePropertyChanged(); }
         }
+        public bool IsPda
+        {
+            get { return _isPda; }
+            set { _isPda = value; RaisePropertyChanged(); }
+        }
 
         public GraphVizFileModel FileConvertedDfa
         {
             get { return _fileConvertedDfa; }
-            set { _fileConvertedDfa = value; RaisePropertyChanged();}
+            set { _fileConvertedDfa = value; RaisePropertyChanged(); }
         }
         public ObservableCollection<string> ConvertedDfaLines
         {
@@ -216,7 +222,7 @@ namespace Ale2Project.ViewModel
         public AutomatonModel ConvertedDfa
         {
             get { return _convertedDfa; }
-            set { _convertedDfa = value; RaisePropertyChanged();}
+            set { _convertedDfa = value; RaisePropertyChanged(); }
         }
 
         public ObservableCollection<string> FileLines
@@ -289,15 +295,21 @@ namespace Ale2Project.ViewModel
         private void ParseFile()
         {
             Automaton = _fileService.ParseGraphVizFile(File);
-
-            _automaton.IsDfa = _dfaService.IsAutomatonDfa(_automaton);
-            IsDfa = _automaton.IsDfa;
-
+            if (_automaton.IsPda)
+            {
+                IsPda = _automaton.IsPda;
+            }
+            else
+            {
+                _automaton.IsDfa = _dfaService.IsAutomatonDfa(_automaton);
+                IsDfa = _automaton.IsDfa;
+            }
             ShowAutomatonCommand.RaiseCanExecuteChanged();
             ShowAllWordsCommand.RaiseCanExecuteChanged();
             ConvertToDfaCommand.RaiseCanExecuteChanged();
         }
 
+      
         private void OpenFile()
         {
             File = _fileService.ReadFile();
