@@ -1,0 +1,11 @@
+alphabet: abc
+stack: x
+states: S,B,C
+final: C
+transitions:
+S,a [_,x] --> S
+S,_ [_,_] --> B
+B,b [_,x] --> B
+B,_ [_,_] --> C
+C,c [x,_] --> C
+end.

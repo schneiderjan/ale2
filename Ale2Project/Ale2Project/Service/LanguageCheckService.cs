@@ -5,6 +5,7 @@ using System.Net;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using Ale2Project.Model;
 
 namespace Ale2Project.Service
@@ -126,6 +127,34 @@ namespace Ale2Project.Service
         {
             var count = passedStates.Count(s => s.Name == currentState.Name);
             if (count <= 1) return false;
+            return true;
+        }
+
+        public bool IsAcceptedStringByPda(string input, AutomatonModel automaton)
+        {
+            Stack<string> stack = new Stack<string>();
+            List<char> values = new List<char>();
+            List<StateModel> currentStates = new List<StateModel>();
+            List<TransitionModel> possibleTransitions = new List<TransitionModel>();
+
+
+            foreach (var c in input)
+            {
+                values.Add(c);
+            }
+
+            currentStates = automaton.States.Where(s => s.IsInitial).ToList();
+
+            foreach (var value in values)
+            {
+                possibleTransitions = automaton.Transitions.Where(s => currentStates.Contains(s.BeginState)).ToList();
+                foreach (var possibleTransition in possibleTransitions)
+                {
+                    
+                }
+            }
+
+
             return true;
         }
     }

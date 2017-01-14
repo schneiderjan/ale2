@@ -7,5 +7,6 @@ namespace Ale2Project.Service
     {
         bool IsAcceptedString(string input, AutomatonModel automaton);
         List<string> GetAllWords(AutomatonModel automaton);
+        bool IsAcceptedStringByPda(string input, AutomatonModel automaton);
     }
 }

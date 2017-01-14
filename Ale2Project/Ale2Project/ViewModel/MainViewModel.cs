@@ -325,7 +325,8 @@ namespace Ale2Project.ViewModel
 
         private void VerifyString()
         {
-            IsStringAccepted = _languageCheckService.IsAcceptedString(_verifyStringInput, Automaton);
+            if (Automaton.IsPda) IsStringAccepted = _languageCheckService.IsAcceptedStringByPda(_verifyStringInput, Automaton);
+            else IsStringAccepted = _languageCheckService.IsAcceptedString(_verifyStringInput, Automaton);
         }
 
         private void CopyRELines()
