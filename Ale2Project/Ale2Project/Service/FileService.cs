@@ -178,8 +178,8 @@ namespace Ale2Project.Service
                 if (leftStackString.Equals("_")) leftStackString = "ε";
                 if (rightStackString.Equals("_")) rightStackString = "ε";
 
-                transition.RightStackValue = rightStackString;
-                transition.LeftStackValue = leftStackString;
+                transition.RightStackOutput = rightStackString;
+                transition.LeftStackInput = leftStackString;
                 transition.Value = valueString;
                 transitions.Add(transition);
             }

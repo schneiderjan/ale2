@@ -5,6 +5,7 @@ using System.Net;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Documents;
 using Ale2Project.Model;
 
@@ -44,10 +45,10 @@ namespace Ale2Project.Service
                         //if yes add to nextstates
                         var transitionsAfterEpsilon =
                             automaton.Transitions.Where(
-                                transition =>
-                                    transition.BeginState == possibleTransition.EndState &&
-                                    transition.Value == Convert.ToString(values[i]))
-                                    .ToList();
+                                    transition =>
+                                        transition.BeginState == possibleTransition.EndState &&
+                                        transition.Value == Convert.ToString(values[i]))
+                                .ToList();
 
                         if (transitionsAfterEpsilon.Any())
                             foreach (var transition in transitionsAfterEpsilon) nextStates.Add(transition.BeginState);
@@ -77,7 +78,8 @@ namespace Ale2Project.Service
             return _words;
         }
 
-        private List<string> FindWords(AutomatonModel automaton, List<StateModel> passedStates, StateModel state, string word)
+        private List<string> FindWords(AutomatonModel automaton, List<StateModel> passedStates, StateModel state,
+            string word)
         {
             foreach (var transition in automaton.Transitions)
             {
@@ -134,8 +136,8 @@ namespace Ale2Project.Service
         {
             Stack<string> stack = new Stack<string>();
             List<char> values = new List<char>();
-            List<StateModel> currentStates = new List<StateModel>();
             List<TransitionModel> possibleTransitions = new List<TransitionModel>();
+            StateModel currentState = new StateModel();
 
 
             foreach (var c in input)
@@ -143,19 +145,60 @@ namespace Ale2Project.Service
                 values.Add(c);
             }
 
-            currentStates = automaton.States.Where(s => s.IsInitial).ToList();
+            currentState = automaton.States.FirstOrDefault(s => s.IsInitial);
+            //"ε"
 
+            return TraversePda(automaton, values, currentState, stack);
+        }
+
+        private bool TraversePda(AutomatonModel automaton, List<char> values, StateModel currentState, Stack<string> stack)
+        {
+            string empty = "ε";
+            List<TransitionModel> possibleTransitions;
             foreach (var value in values)
             {
-                possibleTransitions = automaton.Transitions.Where(s => currentStates.Contains(s.BeginState)).ToList();
+                possibleTransitions = automaton.Transitions.Where(s => s.BeginState == currentState).ToList();
                 foreach (var possibleTransition in possibleTransitions)
                 {
-                    
+                    if (possibleTransition.Value == value.ToString())
+                    {
+                        //[_,_] and stack empty
+                        if (possibleTransition.LeftStackInput == empty &&
+                            possibleTransition.RightStackOutput == empty &&
+                            !stack.Any())
+                        {
+                            return false;
+                        }
+                        //[_, x]
+                        else if (possibleTransition.LeftStackInput == empty &&
+                                 possibleTransition.RightStackOutput != empty)
+                        {
+                            stack.Push(possibleTransition.RightStackOutput);
+                            TraversePda(automaton, values, possibleTransition.EndState, stack);
+                        }
+                        //[x,_]
+                        else if (possibleTransition.LeftStackInput != empty &&
+                                 possibleTransition.RightStackOutput == empty)
+                        {
+                            if (stack.Peek() == possibleTransition.LeftStackInput) return false;
+                            stack.Pop();
+                            TraversePda(automaton, values, possibleTransition.EndState, stack);
+                        }
+                        //[x,x]
+                        if (possibleTransition.LeftStackInput == possibleTransition.RightStackOutput &&
+                            possibleTransition.LeftStackInput != empty &&
+                            possibleTransition.RightStackOutput != empty &&
+                            stack.Any())
+                        {
+                            TraversePda(automaton, values, possibleTransition.EndState, stack);
+                        }
+                    }
                 }
+
+
+                if (!stack.Any() && value == values[values.Count - 1]) return true;
             }
-
-
-            return true;
+            return false;
         }
     }
 }
