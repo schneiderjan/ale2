@@ -1,0 +1,27 @@
+# (ab v abb v abbb)*
+
+alphabet: ab
+states: A,D,B,C
+final: A
+
+transitions:
+A,a --> B
+A,a --> C
+B,b --> A
+C,b --> B
+C,b --> D
+D,b --> B
+end.
+
+words:
+ab,y
+ababb,y
+abbbabababb,y
+,y
+a,n
+abbbb,n
+aa,n
+end.
+
+dfa:n
+finite:n
