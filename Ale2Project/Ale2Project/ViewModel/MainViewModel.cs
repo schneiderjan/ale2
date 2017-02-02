@@ -287,8 +287,8 @@ namespace Ale2Project.ViewModel
 
         private void ParseRegularExpression()
         {
-            AutomatonRE = _regularExpressionParserService.GetAutomaton(_regularExpressionInput);
-            FileRE = _graphVizService.ConvertToGraphVizFile(AutomatonRE);
+            Automaton = _regularExpressionParserService.GetAutomaton(_regularExpressionInput);
+            FileRE = _graphVizService.ConvertToGraphVizFile(Automaton);
             RegularExpressionLines = new ObservableCollection<string>(_fileRe.Lines);
         }
 
