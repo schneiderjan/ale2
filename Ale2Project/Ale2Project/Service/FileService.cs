@@ -86,9 +86,9 @@ namespace Ale2Project.Service
                 }
                 else if (line.Contains("transitions"))
                 {
-
                     var lower = graphVizFileModel.Lines.IndexOf(line) + 1;
-                    var upper = graphVizFileModel.Lines.Count - 1;
+                    //todo: change upper to next "end."
+                    var upper = FindUpperLimit(graphVizFileModel.Lines.IndexOf(line), graphVizFileModel.Lines);
 
                     var transitions = new List<TransitionModel>();
                     transitions = !automaton.IsPda ?
@@ -96,11 +96,53 @@ namespace Ale2Project.Service
                         ReadPdaTransitions(graphVizFileModel, lower, upper, automaton);
 
                     automaton.Transitions = transitions;
-                    break;
+                    //break;
+                }
+                else if (line.Contains("words"))
+                {
+                    var lower = graphVizFileModel.Lines.IndexOf(line) + 1;
+                    var upper = FindUpperLimit(graphVizFileModel.Lines.IndexOf(line), graphVizFileModel.Lines);
+                    automaton.Words = ReadWords(graphVizFileModel, lower, upper);
+                }
+                else if (line.Contains("dfa"))
+                {
+                    var last = line[line.Length - 1];
+                    automaton.IsDfaInFile = last == 'y';
+                }
+                else if (line.Contains("finite"))
+                {
+                    var last = line[line.Length - 1];
+                    automaton.IsDfaInFile = last == 'y';
                 }
 
             }
             return automaton;
+        }
+
+        private Dictionary<string, bool> ReadWords(GraphVizFileModel graphVizFileModel, int lower, int upper)
+        {
+            var words = new Dictionary<string, bool>();
+            for (int i = lower; i < upper; i++)
+            {
+                var line = graphVizFileModel.Lines[i];
+                var chars = SplitOnComma(line);
+                var isAccepted = chars[1] == "y";
+                words.Add(chars[0],isAccepted);
+            }
+            return words;
+        }
+
+        private int FindUpperLimit(int currentIndex, List<string> lines)
+        {
+            for (var index = currentIndex; index < lines.Count; index++)
+            {
+                var line = lines[index];
+                if (line.Contains("end."))
+                {
+                    return index;
+                }
+            }
+            return -1;
         }
 
         private List<TransitionModel> ReadRegularAutomatonTransitions(GraphVizFileModel graphVizFileModel, int lower, int upper, AutomatonModel automaton)
