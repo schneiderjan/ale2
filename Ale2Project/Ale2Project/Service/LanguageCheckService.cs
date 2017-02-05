@@ -95,7 +95,18 @@ namespace Ale2Project.Service
                             _words.Add(newWord);
                             TryAddTransitionOnItself(automaton, transition, newWord);
                         }
-                        else FindWords(automaton, newPassedStates, transition.EndState, newWord);
+                        else
+                        {
+                            FindWords(automaton, newPassedStates, transition.EndState, newWord);
+                        }
+                    }
+                    else
+                    {
+                        if (transition.EndState.IsFinal)
+                        {
+                            _words.Add(newWord);
+                            TryAddTransitionOnItself(automaton, transition, newWord);
+                        }
                     }
                 }
             }
