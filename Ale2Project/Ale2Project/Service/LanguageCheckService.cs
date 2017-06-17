@@ -154,17 +154,25 @@ namespace Ale2Project.Service
             StateModel currentState = new StateModel();
             _isAcceptedStringFound = false;
 
+            currentState = automaton.States.FirstOrDefault(s => s.IsInitial);
+
+
+            if (string.IsNullOrEmpty(input) ||
+                string.IsNullOrWhiteSpace(input))
+            {
+                return IsEmptyWordAccepted(automaton, currentState, stack, false);
+            }
+
             foreach (var c in input)
             {
                 values.Add(c);
             }
-
-            currentState = automaton.States.FirstOrDefault(s => s.IsInitial);
-
             return TraversePda(automaton, values, currentState, stack, false);
         }
 
-        private bool TraversePda(AutomatonModel automaton, List<char> values, StateModel currentState, Stack<string> stack, bool LocalIsAcceptedStringFound)
+
+
+        private bool TraversePda(AutomatonModel automaton, List<char> values, StateModel currentState, Stack<string> stack, bool localIsAcceptedStringFound)
         {
             string empty = "ε";
             List<TransitionModel> possibleTransitions;
@@ -206,6 +214,7 @@ namespace Ale2Project.Service
                             }
 
                             stack.Push(possibleTransition.PushStack);
+                            //var newStack = GetNewPushedStack(stack, possibleTransition.PushStack);
                             var newValues = GetNewValues(values);
                             TraversePda(automaton, newValues, possibleTransition.EndState, stack, false);
                         }
@@ -245,7 +254,6 @@ namespace Ale2Project.Service
                             var newValues = GetNewValues(values);
                             TraversePda(automaton, newValues, possibleTransition.EndState, stack, false);
                         }
-                        Debug.WriteLine("-------------AT THE END !!!!--------------");
                     }
                     else if (possibleTransition.Value == empty)
                     {
@@ -283,6 +291,7 @@ namespace Ale2Project.Service
                                      possibleTransition.PushStack != empty)
                             {
                                 stack.Push(possibleTransition.PushStack);
+                                //var newStack = GetNewPushedStack(stack, possibleTransition.PushStack);
                                 TraversePda(automaton, values, possibleTransition.EndState, stack, false);
                             }
                         }
@@ -296,6 +305,37 @@ namespace Ale2Project.Service
             return _isAcceptedStringFound;
         }
 
+        private bool IsEmptyWordAccepted(AutomatonModel automaton, StateModel currentState, Stack<string> stack, bool localIsAcceptedStringFound)
+        {
+
+            string empty = "ε";
+            List<TransitionModel> possibleTransitions;
+
+            possibleTransitions = automaton.Transitions.Where(s => s.BeginState == currentState).ToList();
+            foreach (var possibleTransition in possibleTransitions)
+            {
+                if (possibleTransition.Value == empty)
+                {
+                    if (possibleTransition.PopStack == empty &&
+                     possibleTransition.PushStack == empty &&
+                     !stack.Any())
+                    {
+                        if (possibleTransition.EndState.IsFinal)
+                        {
+                            _isAcceptedStringFound = true;
+                        }
+                        else
+                        {
+                            IsEmptyWordAccepted(automaton, possibleTransition.EndState, stack, false);
+                        }
+                    }
+                }
+            }
+
+
+            return _isAcceptedStringFound;
+        }
+
         private List<char> GetNewValues(List<char> values)
         {
             List<char> newValues = new List<char>(values);
@@ -303,16 +343,16 @@ namespace Ale2Project.Service
             return newValues;
         }
 
-        private Stack<char> GetNewPoppedStack(Stack<char> stack)
+        private Stack<string> GetNewPoppedStack(Stack<string> stack)
         {
-            Stack<char> newStack = new Stack<char>(stack);
+            Stack<string> newStack = new Stack<string>(stack);
             newStack.Pop();
             return newStack;
-            }
+        }
 
-        private Stack<char> GetNewPushedStack(Stack<char> stack, char pushValue)
+        private Stack<string> GetNewPushedStack(Stack<string> stack, string pushValue)
         {
-            Stack<char> newStack = new Stack<char>(stack);
+            Stack<string> newStack = new Stack<string>(stack);
             newStack.Push(pushValue);
             return newStack;
         }

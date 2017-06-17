@@ -106,8 +106,7 @@ namespace Ale2Project.ViewModel
 
         public bool VerifyStringCanExecute()
         {
-            if (!String.IsNullOrEmpty(_verifyStringInput) && Automaton != null) return true;
-            else return false;
+            return Automaton != null;
         }
 
         public RelayCommand ParseRegularExpressionCommand
@@ -307,6 +306,7 @@ namespace Ale2Project.ViewModel
             ShowAutomatonCommand.RaiseCanExecuteChanged();
             ShowAllWordsCommand.RaiseCanExecuteChanged();
             ConvertToDfaCommand.RaiseCanExecuteChanged();
+            VerifyStringCommmand.RaiseCanExecuteChanged();
         }
 
       
