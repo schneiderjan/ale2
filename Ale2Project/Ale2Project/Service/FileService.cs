@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Ale2Project.Model;
@@ -127,7 +128,7 @@ namespace Ale2Project.Service
                 var line = graphVizFileModel.Lines[i];
                 var chars = SplitOnComma(line);
                 var isAccepted = chars[1] == "y";
-                words.Add(chars[0],isAccepted);
+                words.Add(chars[0], isAccepted);
             }
             return words;
         }
@@ -191,14 +192,26 @@ namespace Ale2Project.Service
 
                 var transitionString = graphVizFileModel.Lines[i];
                 var beginStateString = transitionString.Substring(0, transitionString.IndexOf(',')).Trim();
-                var valueString =
-                    transitionString.Substring(transitionString.IndexOf(',') + 1, transitionString.IndexOf('[') - 2)
-                        .Trim();
-                var leftStackString = transitionString.Substring(transitionString.IndexOf('[') + 1,
-                    transitionString.IndexOf(',')).ToLower();
 
-                var rightStackString = transitionString.Substring(transitionString.IndexOf(',', transitionString.IndexOf(',') + 1) + 1, 1).ToLower();
+                string valueString = "", leftStackString = "", rightStackString = ""; 
+                if (transitionString.Contains("["))
+                {
+                    valueString =
+                        transitionString.Substring(transitionString.IndexOf(',') + 1, transitionString.IndexOf('[') - 2)
+                            .Trim();
+                    leftStackString = transitionString.Substring(transitionString.IndexOf('[') + 1,
+                        transitionString.IndexOf(',')).ToLower();
 
+                    rightStackString = transitionString.Substring(transitionString.IndexOf(',', transitionString.IndexOf(',') + 1) + 1, 1).ToLower();
+                }
+                else
+                {
+                    valueString =
+                        transitionString.Substring(transitionString.IndexOf(',') + 1, transitionString.IndexOf(',') + 3)
+                            .Trim();
+                    leftStackString = "_";
+                    rightStackString = "_";
+                }
                 var endStateString = transitionString.Substring(transitionString.IndexOf('>') + 1).Trim();
 
                 foreach (var state in automaton.States)
@@ -220,8 +233,8 @@ namespace Ale2Project.Service
                 if (leftStackString.Equals("_")) leftStackString = "ε";
                 if (rightStackString.Equals("_")) rightStackString = "ε";
 
-                transition.RightStackOutput = rightStackString;
-                transition.LeftStackInput = leftStackString;
+                transition.PushStack = rightStackString;
+                transition.PopStack = leftStackString;
                 transition.Value = valueString;
                 transitions.Add(transition);
             }

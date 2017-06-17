@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices.ComTypes;
@@ -14,6 +15,8 @@ namespace Ale2Project.Service
     public class LanguageCheckService : ILanguageCheckService
     {
         private List<string> _words;
+        private bool _isAcceptedStringFound;
+
 
         public bool IsAcceptedString(string input, AutomatonModel automaton)
         {
@@ -149,7 +152,7 @@ namespace Ale2Project.Service
             List<char> values = new List<char>();
             List<TransitionModel> possibleTransitions = new List<TransitionModel>();
             StateModel currentState = new StateModel();
-
+            _isAcceptedStringFound = false;
 
             foreach (var c in input)
             {
@@ -157,59 +160,161 @@ namespace Ale2Project.Service
             }
 
             currentState = automaton.States.FirstOrDefault(s => s.IsInitial);
-            //"ε"
 
-            return TraversePda(automaton, values, currentState, stack);
+            return TraversePda(automaton, values, currentState, stack, false);
         }
 
-        private bool TraversePda(AutomatonModel automaton, List<char> values, StateModel currentState, Stack<string> stack)
+        private bool TraversePda(AutomatonModel automaton, List<char> values, StateModel currentState, Stack<string> stack, bool LocalIsAcceptedStringFound)
         {
             string empty = "ε";
             List<TransitionModel> possibleTransitions;
+
+            //check if values empty = processed all inputs
+            //+ if the currentstate is an endstate
+            //+ stack is empty
+            if (!values.Any() &&
+                currentState.IsFinal &&
+                !stack.Any())
+            {
+                _isAcceptedStringFound = true;
+            }
+
             foreach (var value in values)
             {
                 possibleTransitions = automaton.Transitions.Where(s => s.BeginState == currentState).ToList();
                 foreach (var possibleTransition in possibleTransitions)
                 {
+                    //must conisder also emtpyt
+                    //must check if final state when word complete
+                    //accepted string: final state & stack empty
                     if (possibleTransition.Value == value.ToString())
                     {
-                        //[_,_] and stack empty
-                        if (possibleTransition.LeftStackInput == empty &&
-                            possibleTransition.RightStackOutput == empty &&
+                        //pop/push = empty and stack empty 
+                        if (possibleTransition.PopStack == empty &&
+                            possibleTransition.PushStack == empty &&
                             !stack.Any())
                         {
-                            return false;
+                            return _isAcceptedStringFound;
                         }
-                        //[_, x]
-                        else if (possibleTransition.LeftStackInput == empty &&
-                                 possibleTransition.RightStackOutput != empty)
+                        //[_, x] case 1
+                        else if (possibleTransition.PopStack == empty &&
+                                 possibleTransition.PushStack != empty)
                         {
-                            stack.Push(possibleTransition.RightStackOutput);
-                            TraversePda(automaton, values, possibleTransition.EndState, stack);
+                            if (_isAcceptedStringFound)
+                            {
+                                return true;
+                            }
+
+                            stack.Push(possibleTransition.PushStack);
+                            var newValues = GetNewValues(values);
+                            TraversePda(automaton, newValues, possibleTransition.EndState, stack, false);
                         }
-                        //[x,_]
-                        else if (possibleTransition.LeftStackInput != empty &&
-                                 possibleTransition.RightStackOutput == empty)
+                        //[x,_] case 1
+                        else if (possibleTransition.PopStack != empty &&
+                                 possibleTransition.PushStack == empty)
                         {
-                            if (stack.Peek() == possibleTransition.LeftStackInput) return false;
-                            stack.Pop();
-                            TraversePda(automaton, values, possibleTransition.EndState, stack);
+                            if (_isAcceptedStringFound)
+                            {
+                                return true;
+                            }
+
+                            if (stack.Any() &&
+                                stack.Peek() == possibleTransition.PopStack)
+                            {
+                                stack.Pop();
+                            }
+                            else
+                            {
+                                return false;
+                            }
+
+                            var newValues = GetNewValues(values);
+                            TraversePda(automaton, newValues, possibleTransition.EndState, stack, false);
                         }
                         //[x,x]
-                        if (possibleTransition.LeftStackInput == possibleTransition.RightStackOutput &&
-                            possibleTransition.LeftStackInput != empty &&
-                            possibleTransition.RightStackOutput != empty &&
+                        if (possibleTransition.PopStack == possibleTransition.PushStack &&
+                            possibleTransition.PopStack != empty &&
+                            possibleTransition.PushStack != empty &&
                             stack.Any())
                         {
-                            TraversePda(automaton, values, possibleTransition.EndState, stack);
+                            if (_isAcceptedStringFound)
+                            {
+                                return true;
+                            }
+
+                            var newValues = GetNewValues(values);
+                            TraversePda(automaton, newValues, possibleTransition.EndState, stack, false);
+                        }
+                        Debug.WriteLine("-------------AT THE END !!!!--------------");
+                    }
+                    else if (possibleTransition.Value == empty)
+                    {
+                        if (_isAcceptedStringFound)
+                        {
+                            return true;
+                        }
+
+                        // case 3
+                        if (stack.Any())
+                        {
+                            if (stack.Peek() == possibleTransition.PopStack)
+                            {
+                                stack.Pop();
+                            }
+                            else if (possibleTransition.PopStack == empty) // pop stack is empty = traverse w/o removing values
+                            {
+                                //do nothing
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                            TraversePda(automaton, values, possibleTransition.EndState, stack, false);
+                        }
+                        //case 4
+                        else
+                        {
+                            if (possibleTransition.PopStack == empty &&
+                                possibleTransition.PushStack == empty)
+                            {
+                                TraversePda(automaton, values, possibleTransition.EndState, stack, false);
+                            }
+                            else if (possibleTransition.PopStack == empty &&
+                                     possibleTransition.PushStack != empty)
+                            {
+                                stack.Push(possibleTransition.PushStack);
+                                TraversePda(automaton, values, possibleTransition.EndState, stack, false);
+                            }
                         }
                     }
                 }
 
 
-                if (!stack.Any() && value == values[values.Count - 1]) return true;
+                //  if (!stack.Any() && value == values[values.Count - 1]) return true; //doesnt consider end state
+
             }
-            return false;
+            return _isAcceptedStringFound;
+        }
+
+        private List<char> GetNewValues(List<char> values)
+        {
+            List<char> newValues = new List<char>(values);
+            newValues.RemoveAt(0);
+            return newValues;
+        }
+
+        private Stack<char> GetNewPoppedStack(Stack<char> stack)
+        {
+            Stack<char> newStack = new Stack<char>(stack);
+            newStack.Pop();
+            return newStack;
+            }
+
+        private Stack<char> GetNewPushedStack(Stack<char> stack, char pushValue)
+        {
+            Stack<char> newStack = new Stack<char>(stack);
+            newStack.Push(pushValue);
+            return newStack;
         }
     }
 }
