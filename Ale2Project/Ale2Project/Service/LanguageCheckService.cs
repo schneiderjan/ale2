@@ -177,6 +177,45 @@ namespace Ale2Project.Service
             string empty = "ε";
             List<TransitionModel> possibleTransitions;
 
+            //if there is stack but empty transition can remove stack we still have
+            //to check the top of stack and see if transition can remove it
+            //then another recursion, there are possibly more stack items
+            if (stack.Any() &&
+                !values.Any())
+            {
+                possibleTransitions = automaton.Transitions.Where(s => s.BeginState == currentState && s.Value == empty).ToList();
+                if (!possibleTransitions.Any())
+                {
+                    return false;
+                }
+
+                foreach (var possibleTransition in possibleTransitions)
+                {
+                    if (possibleTransition.PopStack != empty &&
+                        possibleTransition.PushStack == empty)
+                    {
+                        if (stack.Any() &&
+                            stack.Peek() == possibleTransition.PopStack)
+                        {
+                            stack.Pop();
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+
+                        if (!stack.Any() &&
+                            possibleTransition.EndState.IsFinal)
+                        {
+                            _isAcceptedStringFound = true;
+                        }
+
+                        TraversePda(automaton, values, possibleTransition.EndState, stack, false);
+                    }
+                }
+            }
+
             //check if values empty = processed all inputs
             //+ if the currentstate is an endstate
             //+ stack is empty
@@ -291,7 +330,6 @@ namespace Ale2Project.Service
                                      possibleTransition.PushStack != empty)
                             {
                                 stack.Push(possibleTransition.PushStack);
-                                //var newStack = GetNewPushedStack(stack, possibleTransition.PushStack);
                                 TraversePda(automaton, values, possibleTransition.EndState, stack, false);
                             }
                         }
@@ -302,6 +340,7 @@ namespace Ale2Project.Service
                 //  if (!stack.Any() && value == values[values.Count - 1]) return true; //doesnt consider end state
 
             }
+
             return _isAcceptedStringFound;
         }
 
@@ -310,6 +349,36 @@ namespace Ale2Project.Service
 
             string empty = "ε";
             List<TransitionModel> possibleTransitions;
+            if (currentState.IsFinal &&
+                !stack.Any())
+            {
+                //check if final is start and see if transition exists
+                //where push/pop = empty
+                //else false
+                if (currentState.IsFinal &&
+                    currentState.IsInitial)
+                {
+                    possibleTransitions = automaton.Transitions.Where(s =>
+                    s.BeginState == currentState &&
+                    s.BeginState == s.EndState &&
+                    s.PopStack == empty &&
+                    s.PushStack == empty)
+                    .ToList();
+
+                    if (possibleTransitions.Any())
+                    {
+                        _isAcceptedStringFound = true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                }
+
+                _isAcceptedStringFound = true;
+            }
+
 
             possibleTransitions = automaton.Transitions.Where(s => s.BeginState == currentState).ToList();
             foreach (var possibleTransition in possibleTransitions)
@@ -328,6 +397,38 @@ namespace Ale2Project.Service
                         {
                             IsEmptyWordAccepted(automaton, possibleTransition.EndState, stack, false);
                         }
+                    }
+                    else if (possibleTransition.PopStack == empty &&
+                             possibleTransition.PushStack != empty)
+                    {
+                        if (_isAcceptedStringFound)
+                        {
+                            return true;
+                        }
+
+                        stack.Push(possibleTransition.PushStack);
+                        IsEmptyWordAccepted(automaton, possibleTransition.EndState, stack, false);
+                    }
+                    //[x,_] case 1
+                    else if (possibleTransition.PopStack != empty &&
+                             possibleTransition.PushStack == empty)
+                    {
+                        if (_isAcceptedStringFound)
+                        {
+                            return true;
+                        }
+
+                        if (stack.Any() &&
+                            stack.Peek() == possibleTransition.PopStack)
+                        {
+                            stack.Pop();
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                        IsEmptyWordAccepted(automaton, possibleTransition.EndState, stack, false);
                     }
                 }
             }
