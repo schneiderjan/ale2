@@ -201,6 +201,12 @@ namespace Ale2Project.Service
                         }
                         else
                         {
+                            //if multiple stack letters are possible its not automatically false.
+                            if (stack.Any() && 
+                                automaton.AccecptedStack.Contains(stack.Peek()))
+                            {
+                                continue;
+                            }
                             return false;
                         }
 
