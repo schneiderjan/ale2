@@ -55,6 +55,9 @@
     <Compile Include="Assignment1Test.cs" />
     <Compile Include="Assignment2Test.cs" />
     <Compile Include="Assignment3Test.cs" />
+    <Compile Include="Assignment4Test.cs" />
+    <Compile Include="Assignment5Test.cs" />
+    <Compile Include="Assignment6Test.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

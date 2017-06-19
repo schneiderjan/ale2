@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Ale2Project.Model;
 
@@ -42,6 +43,13 @@ namespace Ale2Project.Service
             processStartInfo.RedirectStandardInput = true;
 
             Process p = Process.Start(processStartInfo);
+
+            Thread.Sleep(100);
+
+            ProcessStartInfo pictureProcessStartInfo = new ProcessStartInfo();
+            pictureProcessStartInfo.FileName = @"C:\Program Files (x86)\Graphviz2.38\bin\dot.png";
+            Process.Start(pictureProcessStartInfo);
+
         }
 
         public GraphVizFileModel ConvertToGraphVizFile(AutomatonModel automaton)

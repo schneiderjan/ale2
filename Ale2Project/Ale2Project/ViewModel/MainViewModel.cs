@@ -319,7 +319,9 @@ namespace Ale2Project.ViewModel
 
         private void ShowAutomaton()
         {
-            _fileService.WriteGraphVizFileToDotFile(File.Lines);
+            //_fileService.WriteGraphVizFileToDotFile(File.Lines);
+            var tempFile = _graphVizService.ConvertToGraphVizFile(_automaton);
+            _fileService.WriteGraphVizFileToDotFile(tempFile.Lines);
             _graphVizService.DisplayAutomaton();
         }
 
