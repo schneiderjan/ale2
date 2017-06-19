@@ -5,6 +5,6 @@ namespace Ale2Project.Service
     public interface IDfaService
     {
         bool IsAutomatonDfa(AutomatonModel automaton);
-        AutomatonModel ConvertNdfaToNfa(AutomatonModel ndfa);
+        AutomatonModel ConvertNdfaToDfa(AutomatonModel ndfa);
     }
 }

@@ -22,9 +22,9 @@ namespace Ale2Project.Service
             return true;
         }
 
-        public AutomatonModel ConvertNdfaToNfa(AutomatonModel ndfa)
+        public AutomatonModel ConvertNdfaToDfa(AutomatonModel ndfa)
         {
-            var nfa = new AutomatonModel();
+            var dfa = new AutomatonModel();
 
             //Find epsilon transitions for each state
             var stateToEpsilonN = new Dictionary<StateModel, List<StateModel>>();
@@ -42,14 +42,18 @@ namespace Ale2Project.Service
                 }
             }
 
-            nfa = BuildNfa(ndfa, stateToEpsilonN);
-            return nfa;
+            dfa = BuildDfa(ndfa, stateToEpsilonN);
+            return dfa;
         }
 
-        private AutomatonModel BuildNfa(AutomatonModel ndfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
+        private AutomatonModel BuildDfa(AutomatonModel ndfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
         {
             var initialState = ndfa.States.FirstOrDefault(x => x.IsInitial);
-            if (initialState == null) throw new Exception("No initial state found.");
+            if (initialState == null)
+            {
+                throw new Exception("No initial state found.");
+            }
+
             var initList = new List<StateModel> { initialState };
             var stack = new Stack<List<StateModel>>();
             stack.Push(initList);
@@ -143,8 +147,7 @@ namespace Ale2Project.Service
 
         }
 
-        private void FindNewStates(Stack<List<StateModel>> stack, List<IntermediateNfaStateModel> stackHistory,
-            Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel nfa)
+        private void FindNewStates(Stack<List<StateModel>> stack, List<IntermediateNfaStateModel> stackHistory, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel dfa)
         {
             List<StateModel> currentStates;
             if (stack.Any())
@@ -182,15 +185,15 @@ namespace Ale2Project.Service
 
                                 //TODO: eventually add something extra for final state
                                 if ((state.IsInitial || state.IsFinal) &&
-                                    nfa.States.All(s => s.Name != state.Name))
+                                    dfa.States.All(s => s.Name != state.Name))
                                 {
-                                    nfa.States.Add(state);
+                                    dfa.States.Add(state);
 
                                 }
                                 else if (transition.EndState.IsFinal &&
-                                         nfa.States.All(s => s.Name != transition.EndState.Name))
+                                         dfa.States.All(s => s.Name != transition.EndState.Name))
                                 {
-                                    nfa.States.Add(transition.EndState);
+                                    dfa.States.Add(transition.EndState);
                                     stackHistory.Add(new IntermediateNfaStateModel()
                                     {
                                         Name = transition.EndState.Name,
@@ -198,12 +201,12 @@ namespace Ale2Project.Service
                                     });
                                 }
 
-                                if (nfa.States.All(s => s.Name != newState.Name))
+                                if (dfa.States.All(s => s.Name != newState.Name))
                                 {
-                                    nfa.States.Add(newState);
+                                    dfa.States.Add(newState);
                                     stack.Push(newStatesForRecursion);
                                 }
-                                FindNewStates(stack, stackHistory, stateToEpsilonN, ndfa, nfa);
+                                FindNewStates(stack, stackHistory, stateToEpsilonN, ndfa, dfa);
 
                                 //dfa.Transitions.Add(new TransitionModel
                                 //{
@@ -242,8 +245,14 @@ namespace Ale2Project.Service
             {
                 if (transition.BeginState == state && transition.Value == "ε")
                 {
-                    if (stateToEpsilonN.ContainsKey(state)) stateToEpsilonN[state].Add(transition.EndState);
-                    else stateToEpsilonN.Add(state, new List<StateModel> { state, transition.EndState });
+                    if (stateToEpsilonN.ContainsKey(state))
+                    {
+                        stateToEpsilonN[state].Add(transition.EndState);
+                    }
+                    else
+                    {
+                        stateToEpsilonN.Add(state, new List<StateModel> { state, transition.EndState });
+                    }
 
                     FindEpsilonN(ndfa, stateToEpsilonN, transition.EndState);
                 }

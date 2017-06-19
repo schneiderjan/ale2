@@ -56,6 +56,9 @@ namespace Ale2Project.ViewModel
         private GraphVizFileModel _fileConvertedDfa;
         private ObservableCollection<string> _convertedDfaLines;
         private bool _isPda;
+        private bool _isDfaInFile;
+        private bool _isFiniteInFile;
+        private string _isStringAcceptedInFile;
 
         public RelayCommand CopyConvertLinesCommand
         {
@@ -155,6 +158,18 @@ namespace Ale2Project.ViewModel
             set { _isPda = value; RaisePropertyChanged(); }
         }
 
+        public bool IsDfaInFile
+        {
+            get { return _isDfaInFile; }
+            set { _isDfaInFile = value; RaisePropertyChanged(); }
+        }
+
+        public bool IsFiniteInFile
+        {
+            get { return _isFiniteInFile; }
+            set { _isFiniteInFile = value; RaisePropertyChanged(); }
+        }
+
         public GraphVizFileModel FileConvertedDfa
         {
             get { return _fileConvertedDfa; }
@@ -194,6 +209,12 @@ namespace Ale2Project.ViewModel
         {
             get { return _isStringAccepted; }
             set { _isStringAccepted = value; RaisePropertyChanged(); }
+        }
+
+        public string IsStringAcceptedInFile
+        {
+            get { return _isStringAcceptedInFile; }
+            set { _isStringAcceptedInFile = value; RaisePropertyChanged(); }
         }
 
         public string VerifyStringInputInput
@@ -242,7 +263,6 @@ namespace Ale2Project.ViewModel
             set { _words = value; RaisePropertyChanged(); }
         }
 
-
         #endregion
 
         public MainViewModel(IFileService fileService,
@@ -279,7 +299,7 @@ namespace Ale2Project.ViewModel
 
         private void ConvertToDfa()
         {
-            ConvertedDfa = _dfaService.ConvertNdfaToNfa(Automaton);
+            ConvertedDfa = _dfaService.ConvertNdfaToDfa(Automaton);
             FileConvertedDfa = _graphVizService.ConvertToGraphVizFile(ConvertedDfa);
             ConvertedDfaLines = new ObservableCollection<string>(_fileConvertedDfa.Lines);
         }
@@ -303,13 +323,17 @@ namespace Ale2Project.ViewModel
                 _automaton.IsDfa = _dfaService.IsAutomatonDfa(_automaton);
                 IsDfa = _automaton.IsDfa;
             }
+            IsDfaInFile = _automaton.IsDfaInFile;
+            IsFiniteInFile = _automaton.IsFiniteInFile;
             ShowAutomatonCommand.RaiseCanExecuteChanged();
             ShowAllWordsCommand.RaiseCanExecuteChanged();
             ConvertToDfaCommand.RaiseCanExecuteChanged();
             VerifyStringCommmand.RaiseCanExecuteChanged();
         }
 
-      
+
+
+
         private void OpenFile()
         {
             File = _fileService.ReadFile();
@@ -327,6 +351,7 @@ namespace Ale2Project.ViewModel
 
         private void VerifyString()
         {
+            IsStringAcceptedInFile = _languageCheckService.IsStringAcceptedInFile(_verifyStringInput, Automaton);
             if (Automaton.IsPda) IsStringAccepted = _languageCheckService.IsAcceptedStringByPda(_verifyStringInput, Automaton);
             else IsStringAccepted = _languageCheckService.IsAcceptedString(_verifyStringInput, Automaton);
         }

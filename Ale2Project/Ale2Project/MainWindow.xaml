@@ -1,182 +1,163 @@
-﻿<Window x:Class="Ale2Project.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:ignore="http://www.galasoft.ch/ignore"
-        mc:Ignorable="d ignore"
-        Height="800"
-        Width="1025"
-        Title="MVVM Light Application"
-        DataContext="{Binding MainViewModel, Source={StaticResource Locator}}">
+﻿<Window
+    x:Class="Ale2Project.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:ignore="http://www.galasoft.ch/ignore"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="MVVM Light Application"
+    Width="1025"
+    Height="800"
+    DataContext="{Binding MainViewModel, Source={StaticResource Locator}}"
+    mc:Ignorable="d ignore">
 
     <Window.Resources>
-        <ResourceDictionary>
-        </ResourceDictionary>
+        <ResourceDictionary />
     </Window.Resources>
 
     <Window.InputBindings>
-        <KeyBinding Command="{Binding CopyRELinesCommand}" Modifiers="Control" Key="C"/>
-        <KeyBinding Command="{Binding CopyConvertLinesCommand}" Modifiers="Control" Key="X"/>
+        <KeyBinding
+            Key="C"
+            Command="{Binding CopyRELinesCommand}"
+            Modifiers="Control" />
+        <KeyBinding
+            Key="X"
+            Command="{Binding CopyConvertLinesCommand}"
+            Modifiers="Control" />
     </Window.InputBindings>
 
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto"/>
-            <RowDefinition MinHeight="300" 
-                           Height="Auto"/>
-            <RowDefinition MinHeight="300"
-                           Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" MinHeight="300" />
+            <RowDefinition Height="Auto" MinHeight="300" />
         </Grid.RowDefinitions>
 
-        <DockPanel
-            Grid.Row="0"
-            Width="Auto">
+        <DockPanel Grid.Row="0" Width="Auto">
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
-                    <MenuItem 
-                        Header="_Open"
-                        Command="{Binding OpenFileCommand}"/>
+                    <MenuItem Command="{Binding OpenFileCommand}" Header="_Open" />
                 </MenuItem>
             </Menu>
         </DockPanel>
 
-        <Grid
-            Grid.Row="1"
-            Margin="5,2,5,2">
+        <Grid Grid.Row="1" Margin="5,2,5,2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Label
-                Grid.Column="0"
-                Content="FilePath:"/>
-            <TextBlock 
+            <Label Grid.Column="0" Content="FilePath:" />
+            <TextBlock
                 Grid.Column="1"
-                VerticalAlignment="Center"
                 HorizontalAlignment="Left"
-                Text="{Binding Path=File.FilePath}"/>
+                VerticalAlignment="Center"
+                Text="{Binding Path=File.FilePath}" />
             <Button
                 Grid.Column="2"
                 HorizontalAlignment="Right"
-                Content="Parse File"
-                Command="{Binding ParseFileCommand}"/>
-            <Button Grid.Column="3"
-                    HorizontalAlignment="Center"
-                    Content="Show Automaton"
-                    Command="{Binding ShowAutomatonCommand}"/>
-            <Button Grid.Column="4"
-                    HorizontalAlignment="Right"
-                    Content="All Words"
-                    Command="{Binding ShowAllWordsCommand}"/>
+                Command="{Binding ParseFileCommand}"
+                Content="Parse File" />
+            <Button
+                Grid.Column="3"
+                HorizontalAlignment="Center"
+                Command="{Binding ShowAutomatonCommand}"
+                Content="Show Automaton" />
+            <Button
+                Grid.Column="4"
+                HorizontalAlignment="Right"
+                Command="{Binding ShowAllWordsCommand}"
+                Content="All Words" />
         </Grid>
 
-        <Grid 
-            Grid.Row="2" 
-            Margin="5,2,5,2">
-            
-            <TextBlock
-                Text="{Binding IsDfa, StringFormat='IsDfa: {0}'}"/>
-            <TextBlock
-                Text="{Binding IsPda, StringFormat='IsPda: {0}'}"
-                Margin="0,25,0,0"/>
-            
-            <Button Content="Convert to Dfa"
-                    Command="{Binding ConvertToDfaCommand}"
-                    HorizontalAlignment="Right"/>
+        <Grid Grid.Row="2" Margin="5,2,5,2">
+
+            <TextBlock Text="{Binding IsDfa, StringFormat='IsDfa: {0}'}" />
+            <TextBlock Margin="0,25,0,0" Text="{Binding IsPda, StringFormat='IsPda: {0}'}" />
+            <TextBlock Margin="100,0,0,0" Text="{Binding IsDfaInFile, StringFormat='IsDfaInFile: {0}'}" />
+            <TextBlock Margin="100,25,0,0" Text="{Binding IsFiniteInFile, StringFormat='IsFiniteInFile: {0}'}" />
+
+            <Button
+                HorizontalAlignment="Right"
+                Command="{Binding ConvertToDfaCommand}"
+                Content="Convert to Dfa" />
         </Grid>
 
-        <Grid 
-            Grid.Row="3"
-            Margin="5,2,5,2">
+        <Grid Grid.Row="3" Margin="5,2,5,2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition  />
             </Grid.ColumnDefinitions>
-            <TextBlock 
-                Grid.Column="0"
-                Text="String: "/>
-            <TextBox 
-                Grid.Column="1"
-                Text="{Binding VerifyStringInputInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-            <Button 
+            <TextBlock Grid.Column="0" Text="String: " />
+            <TextBox Grid.Column="1" Text="{Binding VerifyStringInputInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <Button
                 Grid.Column="2"
                 Width="75"
                 Command="{Binding VerifyStringCommmand}"
-                Content="VerifyString"/>
+                Content="VerifyString" />
             <TextBlock
                 Grid.Column="3"
                 HorizontalAlignment="Right"
-                Text="{Binding IsStringAccepted, StringFormat='IsStringAccepted: {0}'}"/>
+                Text="{Binding IsStringAccepted, StringFormat='IsStringAccepted: {0}'}" />
+            <TextBlock
+                Grid.Column="4"
+                HorizontalAlignment="Right"
+                Text="{Binding IsStringAcceptedInFile, StringFormat='IsStringAcceptedInFile: {0}'}" />
         </Grid>
 
-        <Grid
-            Grid.Row="4"
-            Margin="5,2,5,2">
+        <Grid Grid.Row="4" Margin="5,2,5,2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock 
-                Grid.Column="0"
-                Text="RE: "/>
-            <TextBox 
-                Grid.Column="1"
-                Text="{Binding RegularExpressionInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock Grid.Column="0" Text="RE: " />
+            <TextBox Grid.Column="1" Text="{Binding RegularExpressionInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <Button
-               Grid.Column="2"
-               HorizontalAlignment="Right"
-               Content="Parse RE"
-               Command="{Binding ParseRegularExpressionCommand}"/>
+                Grid.Column="2"
+                HorizontalAlignment="Right"
+                Command="{Binding ParseRegularExpressionCommand}"
+                Content="Parse RE" />
         </Grid>
 
-        <Grid Row="5"
-              Margin="5,2,5,2">
+        <Grid Margin="5,2,5,2" Row="5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <ListView Grid.Column="0"
-                      ItemsSource="{Binding FileLines}"/>
+            <ListView Grid.Column="0" ItemsSource="{Binding FileLines}" />
 
-            <ListView Grid.Column="1"
-                      ItemsSource="{Binding RegularExpressionLines}"/>
-            
-            <ListView Grid.Column="2"
-                      ItemsSource="{Binding ConvertedDfaLines}"/>
+            <ListView Grid.Column="1" ItemsSource="{Binding RegularExpressionLines}" />
+
+            <ListView Grid.Column="2" ItemsSource="{Binding ConvertedDfaLines}" />
 
         </Grid>
 
-        <Grid Row="6"
-              Margin="5,2,5,2">
+        <Grid Margin="5,2,5,2" Row="6">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <ListView Grid.Column="0"
-                      ItemsSource="{Binding Words}"/>
+            <ListView Grid.Column="0" ItemsSource="{Binding Words}" />
 
-            <ListView Grid.Column="1"
-                      />
+            <ListView Grid.Column="1" />
 
-            <ListView Grid.Column="2"
-                      />
+            <ListView Grid.Column="2" />
 
         </Grid>
     </Grid>

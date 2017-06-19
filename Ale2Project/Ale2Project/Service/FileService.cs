@@ -113,7 +113,7 @@ namespace Ale2Project.Service
                 else if (line.Contains("finite"))
                 {
                     var last = line[line.Length - 1];
-                    automaton.IsDfaInFile = last == 'y';
+                    automaton.IsFiniteInFile = last == 'y';
                 }
 
             }
@@ -253,7 +253,7 @@ namespace Ale2Project.Service
             }
         }
 
-        public GraphVizFileModel ConvertAutomatonToGenericFile(AutomatonModel automaton)
+       public GraphVizFileModel ConvertAutomatonToGenericFile(AutomatonModel automaton)
         {
             var graphVizFile = new GraphVizFileModel();
 

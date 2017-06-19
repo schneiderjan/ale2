@@ -170,6 +170,24 @@ namespace Ale2Project.Service
             return TraversePda(automaton, values, currentState, stack, false);
         }
 
+        public string IsStringAcceptedInFile(string input, AutomatonModel automaton)
+        {
+            var inFile = automaton.Words.FirstOrDefault(t => t.Key == input);
+            if (inFile.Key == null)
+            {
+                return "NaN";
+            }
+            if (inFile.Value)
+            {
+                return "True";
+            }
+            else if (!inFile.Value)
+            {
+                return "False";
+            }
+            return "NaN";
+
+        }
 
 
         private bool TraversePda(AutomatonModel automaton, List<char> values, StateModel currentState, Stack<string> stack, bool localIsAcceptedStringFound)
