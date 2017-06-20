@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -45,11 +46,17 @@ namespace Ale2Project.Service
             Process p = Process.Start(processStartInfo);
 
             Thread.Sleep(100);
-
-            ProcessStartInfo pictureProcessStartInfo = new ProcessStartInfo();
-            pictureProcessStartInfo.FileName = @"C:\Program Files (x86)\Graphviz2.38\bin\dot.png";
-            Process.Start(pictureProcessStartInfo);
-
+            try
+            {
+                ProcessStartInfo pictureProcessStartInfo = new ProcessStartInfo();
+                pictureProcessStartInfo.FileName = @"C:\Program Files (x86)\Graphviz2.38\bin\dot.png";
+                Process.Start(pictureProcessStartInfo);
+            }
+            catch (Win32Exception exception)
+            {
+                Debug.WriteLine(exception.Message);
+                Debug.WriteLine("Cannot open file. A file with the same name is already opened.");
+            }
         }
 
         public GraphVizFileModel ConvertToGraphVizFile(AutomatonModel automaton)

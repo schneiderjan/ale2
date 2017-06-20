@@ -6,14 +6,17 @@ using System.Threading.Tasks;
 
 namespace Ale2Project.Model
 {
-    public class IntermediateNfaStateModel
+    public class IntermediateDfaStateModel
     {
-        public IntermediateNfaStateModel()
+        public IntermediateDfaStateModel()
         {
             States = new List<StateModel>();
         }
 
         public string Name { get; set; }
         public List<StateModel> States { get; set; }
+        public List<string> alphabetFlags { get; set; }
+        public StateModel OriginatingState { get; set; }
+        public string Value { get; set; }
     }
 }

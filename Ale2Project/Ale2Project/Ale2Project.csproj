@@ -80,7 +80,7 @@
     </ApplicationDefinition>
     <Compile Include="Model\AutomatonModel.cs" />
     <Compile Include="Model\GraphVizFileModel.cs" />
-    <Compile Include="Model\IntermediateNfaStateModel.cs" />
+    <Compile Include="Model\IntermediateDfaStateModel.cs" />
     <Compile Include="Model\NodeModel.cs" />
     <Compile Include="Model\StateModel.cs" />
     <Compile Include="Model\TransitionModel.cs" />

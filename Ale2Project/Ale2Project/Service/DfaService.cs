@@ -9,6 +9,8 @@ namespace Ale2Project.Service
 {
     public class DfaService : IDfaService
     {
+        private string _empty = "ε";
+
         public bool IsAutomatonDfa(AutomatonModel automaton)
         {
             //conditions:
@@ -25,26 +27,194 @@ namespace Ale2Project.Service
         public AutomatonModel ConvertNdfaToDfa(AutomatonModel ndfa)
         {
             var dfa = new AutomatonModel();
+            var newStates = new Dictionary<StateModel, List<StateModel>>();
+            List<StateModel> stateHistory = new List<StateModel>();
+            Queue<IntermediateDfaStateModel> stack = new Queue<IntermediateDfaStateModel>();
+            StateModel currentState = new StateModel();
 
-            //Find epsilon transitions for each state
-            var stateToEpsilonN = new Dictionary<StateModel, List<StateModel>>();
-            foreach (var state in ndfa.States)
+            var initialState = ndfa.States.FirstOrDefault(x => x.IsInitial);
+            if (initialState == null)
             {
-                FindEpsilonN(ndfa, stateToEpsilonN, state);
+                throw new Exception("No initial state found.");
             }
-            //FindEpsilonN only adds the E* which have an actual E transitions
-            //but does not consider the state itself then, hence the loop below
-            foreach (var state in ndfa.States)
+            stateHistory.Add(initialState);
+
+            stack.Enqueue(new IntermediateDfaStateModel
             {
-                if (!stateToEpsilonN.ContainsKey(state))
+                Name = initialState.Name,
+                States = new List<StateModel> { initialState }
+            });
+            dfa.States.Add(initialState);
+            dfa.Alphabet = ndfa.Alphabet;
+
+            TraverseNfa(stack, stateHistory, ndfa, dfa);
+
+            return dfa;
+
+        }
+
+        private void TraverseNfa(Queue<IntermediateDfaStateModel> queue, List<StateModel> stateHistory, AutomatonModel ndfa, AutomatonModel dfa)
+        {
+            IntermediateDfaStateModel currentStates = new IntermediateDfaStateModel();
+            if (queue.Any())
+            {
+                currentStates = queue.Dequeue();
+            }
+            else
+            {
+                return;
+            }
+            var originatingState = dfa.States.Find(s => s.Name == currentStates.Name);
+
+            foreach (var letter in ndfa.Alphabet)
+            {
+                IntermediateDfaStateModel newHistoryItem = new IntermediateDfaStateModel();
+
+                foreach (var currentState in currentStates.States)
                 {
-                    stateToEpsilonN.Add(state, new List<StateModel> { state });
+                    foreach (var state in ndfa.States)
+                    {
+                        foreach (var transition in ndfa.Transitions)
+                        {
+                            if (currentState == state &&
+                                transition.Value == letter.ToString() &&
+                                transition.BeginState == currentState)
+                            {
+                                //create history item
+                                //add each state to states list and add statename like += to history name
+                                newHistoryItem.States.Add(transition.EndState);
+                                newHistoryItem.Name += transition.EndState.Name;
+                                newHistoryItem.Value = transition.Value;
+                                newHistoryItem.OriginatingState = originatingState;
+                            }
+                            else if (currentState == state &&
+                                     transition.Value == _empty &&
+                                     transition.BeginState == currentState)
+                            {
+                                IntermediateDfaStateModel epsilonHistoryItem = FindEpsilonTransitions(originatingState, currentState, transition.EndState, letter, ndfa, dfa);
+
+                                if (epsilonHistoryItem.Name == null) continue;
+
+                                newHistoryItem.States.AddRange(epsilonHistoryItem.States);
+                                newHistoryItem.Name += epsilonHistoryItem.Name;
+                                newHistoryItem.Value = epsilonHistoryItem.Value;
+                                newHistoryItem.OriginatingState = originatingState;
+                            }
+                        }
+                    }
+                    //build new state and transition of the dfa
+                    //also add the new state to the stack
+
+                }
+                if (newHistoryItem.Name == null) continue;
+
+                var newState = AddHistoryToDfa(dfa, newHistoryItem);
+                if (stateHistory.All(s => s.Name != newState.Name))
+                {
+                    queue.Enqueue(newHistoryItem);
+                    stateHistory.Add(newState);
+                }
+
+            }
+            //from the history add to stack
+            //and also create new state with transition
+
+
+            if (queue.Any())
+            {
+                TraverseNfa(queue, stateHistory, ndfa, dfa);
+            }
+            else
+            {
+                //check also if a final state exists
+                //Im not entirely sure about the theory for dfa's
+                //but i made only one final state possible.
+                //either the last processed one or
+                //if the first processed state was initial already
+                if (dfa.States.Any(s => s.IsFinal))
+                {
+                    return;
+                }
+                var lastState = dfa.States.LastOrDefault();
+                if (lastState != null)
+                {
+                    lastState.IsFinal = true;
                 }
             }
-
-            dfa = BuildDfa(ndfa, stateToEpsilonN);
-            return dfa;
         }
+
+        private IntermediateDfaStateModel FindEpsilonTransitions(StateModel originatingState, StateModel currentState, StateModel transitionEndState, char letter, AutomatonModel ndfa, AutomatonModel dfa)
+        {
+            IntermediateDfaStateModel historyItem = new IntermediateDfaStateModel();
+            foreach (var transition in ndfa.Transitions)
+            {
+                if (transition.BeginState == transitionEndState &&
+                    transition.Value == letter.ToString())
+                {
+                    //create the new history item and return
+                    historyItem.States.Add(transition.EndState);
+                    historyItem.Name += transition.EndState.Name;
+                    historyItem.Value = transition.Value;
+                    historyItem.OriginatingState = originatingState;
+                }
+                else if (transition.BeginState == transitionEndState &&
+                         transition.Value == _empty)
+                {
+                    //continue recursion
+                }
+            }
+            return historyItem;
+        }
+
+        private StateModel AddHistoryToDfa(AutomatonModel dfa, IntermediateDfaStateModel newHistoryItem)
+        {
+
+            var newState = new StateModel()
+            {
+                Name = newHistoryItem.Name,
+            };
+
+            if (dfa.States.All(s => s.Name != newState.Name))
+            {
+                dfa.States.Add(newState);
+            }
+            else
+            {
+                newState = dfa.States.Find(s => s.Name == newState.Name);
+            }
+
+            dfa.Transitions.Add(new TransitionModel
+            {
+                BeginState = newHistoryItem.OriginatingState,
+                EndState = newState,
+                Value = newHistoryItem.Value
+            });
+            return newState;
+        }
+
+        //public AutomatonModel ConvertNdfaToDfa(AutomatonModel ndfa)
+        //{
+        //    var dfa = new AutomatonModel();
+
+        //    //Find epsilon transitions for each state
+        //    var stateToEpsilonN = new Dictionary<StateModel, List<StateModel>>();
+        //    foreach (var state in ndfa.States)
+        //    {
+        //        FindEpsilonN(ndfa, stateToEpsilonN, state);
+        //    }
+        //    //FindEpsilonN only adds the E* which have an actual E transitions
+        //    //but does not consider the state itself then, hence the loop below
+        //    foreach (var state in ndfa.States)
+        //    {
+        //        if (!stateToEpsilonN.ContainsKey(state))
+        //        {
+        //            stateToEpsilonN.Add(state, new List<StateModel> { state });
+        //        }
+        //    }
+
+        //    dfa = BuildDfa(ndfa, stateToEpsilonN);
+        //    return dfa;
+        //}
 
         private AutomatonModel BuildDfa(AutomatonModel ndfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
         {
@@ -59,7 +229,7 @@ namespace Ale2Project.Service
             stack.Push(initList);
 
             var dfa = new AutomatonModel();
-            var stackHistory = new List<IntermediateNfaStateModel>();
+            var stackHistory = new List<IntermediateDfaStateModel>();
             FindNewStates(stack, stackHistory, stateToEpsilonN, ndfa, dfa);
             stackHistory = stackHistory.DistinctBy(s => s.Name).ToList();
             FindNewTransitions(stackHistory, ndfa, dfa, stateToEpsilonN);
@@ -68,7 +238,7 @@ namespace Ale2Project.Service
             return dfa;
         }
 
-        private void FindNewTransitions(List<IntermediateNfaStateModel> stackHistory, AutomatonModel ndfa, AutomatonModel dfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
+        private void FindNewTransitions(List<IntermediateDfaStateModel> stackHistory, AutomatonModel ndfa, AutomatonModel dfa, Dictionary<StateModel, List<StateModel>> stateToEpsilonN)
         {
             //check each transition in original automaton for each letter
             //beginstate must be in stackhistory and endstate is E*
@@ -147,7 +317,7 @@ namespace Ale2Project.Service
 
         }
 
-        private void FindNewStates(Stack<List<StateModel>> stack, List<IntermediateNfaStateModel> stackHistory, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel dfa)
+        private void FindNewStates(Stack<List<StateModel>> stack, List<IntermediateDfaStateModel> stackHistory, Dictionary<StateModel, List<StateModel>> stateToEpsilonN, AutomatonModel ndfa, AutomatonModel dfa)
         {
             List<StateModel> currentStates;
             if (stack.Any())
@@ -194,7 +364,7 @@ namespace Ale2Project.Service
                                          dfa.States.All(s => s.Name != transition.EndState.Name))
                                 {
                                     dfa.States.Add(transition.EndState);
-                                    stackHistory.Add(new IntermediateNfaStateModel()
+                                    stackHistory.Add(new IntermediateDfaStateModel()
                                     {
                                         Name = transition.EndState.Name,
                                         States = new List<StateModel> { transition.EndState }
@@ -221,7 +391,7 @@ namespace Ale2Project.Service
             }
         }
 
-        private void AddToStackHistory(List<IntermediateNfaStateModel> stackHistory, List<StateModel> currentStates)
+        private void AddToStackHistory(List<IntermediateDfaStateModel> stackHistory, List<StateModel> currentStates)
         {
             var name = "";
             foreach (var currentState in currentStates)
@@ -231,7 +401,7 @@ namespace Ale2Project.Service
                     : currentState.Name + ",";
             }
 
-            stackHistory.Add(new IntermediateNfaStateModel
+            stackHistory.Add(new IntermediateDfaStateModel
             {
                 Name = name,
                 States = currentStates

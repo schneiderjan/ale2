@@ -1,6 +1,6 @@
-Graphviz is not working for, below the workaround in order to copy the output to web graphviz:
 to copy middle list view have the application window selected and do ctrl + C
 to copy right list view have the application window selected and do ctrl + X
 
-Week 6 is not fully functional.
-Reading pda is ok but finding accepted words will result in a stackoverflow.
+In assigment 5 only the first transition after an epsilon transition is considered.
+
+
