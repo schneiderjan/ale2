@@ -248,6 +248,7 @@ namespace Ale2Project.Service
                 !stack.Any())
             {
                 _isAcceptedStringFound = true;
+                return _isAcceptedStringFound;
             }
 
             foreach (var value in values)

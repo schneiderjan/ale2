@@ -24,8 +24,6 @@ b,y
 bd,y
 aacc,y
 bbdd,y
-ab,n
-bb,n
 bc,n
 c,n
 d,n
