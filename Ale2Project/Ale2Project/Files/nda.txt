@@ -1,4 +1,4 @@
-alphabet: ab
+alphabet: abc
 states: Z,A,B
 final: A
 transitions:
