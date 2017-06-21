@@ -24,6 +24,11 @@ namespace Ale2Project.Service
             return true;
         }
 
+        /// <summary>
+        /// Reworked assignment five
+        /// </summary>
+        /// <param name="ndfa"></param>
+        /// <returns></returns>
         public AutomatonModel ConvertNdfaToDfa(AutomatonModel ndfa)
         {
             var dfa = new AutomatonModel();
